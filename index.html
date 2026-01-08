@@ -78,9 +78,10 @@
         .time-text { font-size: 1.1rem; color: #2196f3; }
         .best-time { font-size: 0.9rem; color: #ff9800; }
         #game-container {
-            flex-grow: 1; /* 상단/하단 광고를 제외한 남은 공간을 강제로 꽉 채움 */
+            flex: 1 1 auto; /* 상단/하단 광고를 제외한 남은 공간을 강제로 꽉 채움 */
             position: relative;
             width: 100%;
+            min-height: 0; /* flex 아이템이 축소될 수 있도록 */
             background: #222;
             display: flex;
             justify-content: center;
@@ -439,10 +440,14 @@
                 
                 const container = document.getElementById('game-container');
                 if (!container) return;
+                
+                // container의 실제 높이를 강제로 계산
+                const containerRect = container.getBoundingClientRect();
+                const containerHeight = Math.floor(containerRect.height);
 
                 // 중앙 게임 영역 박스의 실제 크기를 측정해서 캔버스에 입힙니다.
                 canvas.width = Math.min(container.clientWidth, 500);
-                canvas.height = container.clientHeight;
+                canvas.height = containerHeight > 0 ? containerHeight : container.clientHeight;
 
                 // 캐릭터(바구니) 위치를 바닥에서 80px 위로 재조정합니다.
                 basket.x = canvas.width / 2 - 40;
@@ -450,7 +455,6 @@
                 
                 // canvas의 실제 위치를 getBoundingClientRect로 정확히 계산
                 const canvasRect = canvas.getBoundingClientRect();
-                const containerRect = container.getBoundingClientRect();
                 const spacing = 20; // canvas와 좌우 요소 사이의 간격
                 
                 // canvas의 왼쪽 끝 위치 (container 기준)
@@ -503,8 +507,8 @@
                 viewportHeight = Math.floor(window.innerHeight);
             }
             
-            // 높이가 변경되었을 때만 업데이트 (불필요한 리플로우 방지)
-            if (viewportHeight !== lastKnownHeight && viewportHeight > 0) {
+            // 항상 업데이트 (높이 변경 여부와 관계없이)
+            if (viewportHeight > 0) {
                 lastKnownHeight = viewportHeight;
                 
                 // 광고 영역은 그대로 두고 body 높이만 설정
@@ -532,12 +536,14 @@
                 html.style.setProperty('left', '0', 'important');
                 html.style.setProperty('right', '0', 'important');
                 html.style.setProperty('bottom', '0', 'important');
-            } else {
-                // 높이가 같아도 스크롤 위치는 계속 확인
-                body.style.setProperty('position', 'fixed', 'important');
-                body.style.setProperty('top', '0', 'important');
-                html.style.setProperty('position', 'fixed', 'important');
-                html.style.setProperty('top', '0', 'important');
+            }
+            
+            // 스크롤 위치는 항상 확인
+            if (window.scrollY !== 0 || window.pageYOffset !== 0 || 
+                document.documentElement.scrollTop !== 0 || document.body.scrollTop !== 0) {
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
             }
             
             // 광고 영역은 건들지 않음 (광고 수익 유지)
