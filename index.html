@@ -566,6 +566,17 @@
                 }
             }
             // 모바일은 CSS의 fixed position으로 처리
+            
+            // 바구니 위치가 확실히 설정되었는지 최종 확인
+            if (canvas.width > 0 && canvas.height > 0) {
+                // 바구니가 범위를 벗어났거나 초기화되지 않았으면 재설정
+                if (basket.x < 0 || basket.x + basket.w > canvas.width ||
+                    basket.y < 0 || basket.y + basket.h > canvas.height ||
+                    (basket.x === 0 && basket.y === 0)) {
+                    basket.x = Math.max(0, Math.min(canvas.width / 2 - basket.w / 2, canvas.width - basket.w));
+                    basket.y = Math.max(0, Math.min(canvas.height - basket.h - 10, canvas.height - basket.h));
+                }
+            }
         }
         
         // 화면 고정 함수 (모바일 브라우저 강제 고정) - 단순화 버전
@@ -787,15 +798,25 @@
             // 게임 시작 전에 캔버스 크기와 바구니 위치를 확실히 설정
             resizeCanvas();
             
-            // 약간의 지연 후 다시 한 번 확인 (브라우저가 레이아웃을 완료할 시간을 줌)
-            setTimeout(() => {
-                resizeCanvas();
-            }, 50);
-            
             gameState = 'playing';
             document.getElementById('start-screen').style.display = 'none';
             lastSpawnTime = performance.now();
             gameStartTime = performance.now();
+            
+            // 약간의 지연 후 다시 한 번 확인하고 초기 렌더링 (브라우저가 레이아웃을 완료할 시간을 줌)
+            setTimeout(() => {
+                resizeCanvas();
+                // 바구니가 확실히 보이도록 즉시 렌더링
+                if (canvas.width > 0 && canvas.height > 0) {
+                    // 바구니 위치 최종 확인
+                    if (basket.x < 0 || basket.x + basket.w > canvas.width ||
+                        basket.y < 0 || basket.y + basket.h > canvas.height) {
+                        basket.x = Math.max(0, Math.min(canvas.width / 2 - basket.w / 2, canvas.width - basket.w));
+                        basket.y = Math.max(0, Math.min(canvas.height - basket.h - 10, canvas.height - basket.h));
+                    }
+                    draw();
+                }
+            }, 50);
             
             // 타이머 시작
             gameTimer = setInterval(() => {
@@ -805,9 +826,9 @@
                 }
             }, 100);
             
-            // 게임 시작 시 초기 렌더링 (바구니가 보이도록)
+            // 게임 루프 시작 전에 한 번 더 렌더링
             setTimeout(() => {
-                if (canvas.width > 0 && canvas.height > 0) {
+                if (gameState === 'playing' && canvas.width > 0 && canvas.height > 0) {
                     draw();
                 }
             }, 100);
@@ -1040,18 +1061,21 @@
                 ctx.fillText(p.text, p.x, p.y);
             });
 
-            // 바구니 위치가 캔버스 범위 내에 있는지 확인하고 조정
+            // 바구니 위치가 항상 올바르게 설정되도록 보장
+            // 바구니가 초기화되지 않았거나 범위를 벗어났으면 올바른 위치로 재설정
+            if (basket.y <= 0 || basket.y + basket.h > canvas.height || 
+                basket.x < 0 || basket.x + basket.w > canvas.width ||
+                (basket.x === 0 && basket.y === 0)) {
+                // 바구니를 화면 하단 중앙에 배치
+                basket.x = Math.max(0, Math.min(canvas.width / 2 - basket.w / 2, canvas.width - basket.w));
+                basket.y = Math.max(0, Math.min(canvas.height - basket.h - 10, canvas.height - basket.h));
+            }
+            
+            // 바구니 위치를 캔버스 범위 내로 제한
             basket.x = Math.max(0, Math.min(basket.x, canvas.width - basket.w));
             basket.y = Math.max(0, Math.min(basket.y, canvas.height - basket.h));
-            
-            // 바구니가 제대로 초기화되지 않았으면 (화면 하단에 없으면) 올바른 위치로 설정
-            // 화면 하단 80% 이하에 있으면 초기화되지 않은 것으로 간주
-            if (basket.y < canvas.height * 0.2 && canvas.width > 0 && canvas.height > 0) {
-                basket.x = Math.max(0, canvas.width / 2 - basket.w / 2);
-                basket.y = Math.max(0, canvas.height - basket.h - 10);
-            }
 
-            // 바구니 그리기
+            // 바구니 그리기 (항상 그려지도록 보장)
             ctx.fillStyle = "#5d4037";
             ctx.fillRect(basket.x, basket.y, basket.w, basket.h);
             ctx.fillStyle = "white"; 
