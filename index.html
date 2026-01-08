@@ -12,32 +12,33 @@
         @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
         * { box-sizing: border-box; }
         html { height: 100%; width: 100%; overflow: hidden; position: fixed; }
-        body { 
-            margin: 0; 
-            padding: 0; 
-            /* 아이폰 인앱 브라우저 대응 핵심 */
-            height: 100%; 
-            width: 100%; 
-            overflow: hidden; 
+        body {
+            margin: 0;
+            padding: 0;
+            /* 아이폰 인앱 브라우저 밀림 방지 핵심 */
+            width: 100vw;
+            height: 100dvh; /* dvh는 최신 브라우저의 가변 높이를 반영합니다 */
+            overflow: hidden;
             position: fixed; 
-            display: flex; 
-            flex-direction: column; 
-            background: #1a1a1a; 
+            display: flex;
+            flex-direction: column;
+            background: #1a1a1a;
             text-align: center; 
             font-family: 'Jua', sans-serif; 
             color: white; 
             touch-action: none; 
         }
-        .ad-top { 
-            background: #333; 
-            height: 50px; /* 고정 높이 */
-            min-height: 50px; 
+        /* 광고 영역의 높이를 숫자로 고정 */
+        .ad-top {
+            background: #333;
+            height: 50px !important; 
+            min-height: 50px !important;
             line-height: 50px; 
             font-size: 11px; 
             color: #888; 
-            flex-shrink: 0; 
+            flex-shrink: 0;
         }
-        #ui-header { 
+        #ui-header {
             padding: 15px 10px; 
             background: #222; 
             position: relative; /* 버튼 배치의 기준점 */
@@ -45,23 +46,29 @@
             flex-direction: column; 
             align-items: center;
             justify-content: center;
-            flex-shrink: 0; 
-            min-height: 120px; /* 헤더 높이 확보 */
+            flex-shrink: 0;
+            height: 120px; /* 헤더 높이도 고정 */
         }
         .title { color: #ffeb3b; font-size: 1.4rem; margin-bottom: 5px; }
         .price-tag { color: #ff5252; font-size: 1.1rem; }
         .stats-text { font-size: 1.2rem; color: #4caf50; }
         .time-text { font-size: 1.1rem; color: #2196f3; }
         .best-time { font-size: 0.9rem; color: #ff9800; }
-        #game-container { 
-            flex-grow: 1; /* 남은 모든 공간을 게임 화면이 차지 */
-            position: relative; 
-            overflow: hidden; 
-            background: #222; 
-            display: flex; 
-            justify-content: center; 
+        #game-container {
+            flex-grow: 1; /* 남은 공간을 캔버스가 꽉 채움 */
+            position: relative;
+            width: 100%;
+            background: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        canvas { background: #2c2c2c; display: block; }
+        canvas {
+            display: block;
+            background: #2c2c2c;
+            max-width: 100%;
+            max-height: 100%;
+        }
         .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #start-screen { background-color: #1a1a1a; background-image: url('start.png'); background-size: contain; background-position: center; background-repeat: no-repeat; }
         @media (max-width: 768px) {
@@ -84,10 +91,10 @@
         /* 팝업 메시지 스타일 */
         #msg-pop { position: absolute; width: 100%; top: 30%; left: 0; font-size: 2.2rem; display: none; text-shadow: 3px 3px #000; z-index: 20; font-weight: bold; pointer-events: none; }
         /* 하단 광고 영역 확대 (수익 극대화 배치) */
-        .ad-bottom { 
-            background: #333; 
-            height: 100px; /* 고정 높이 */
-            min-height: 100px; 
+        .ad-bottom {
+            background: #333;
+            height: 100px !important; 
+            min-height: 100px !important;
             line-height: 250px; 
             color: #ffeb3b; 
             font-size: 16px; 
@@ -387,23 +394,16 @@
         const imgCoin = new Image(); imgCoin.src = 'coin.png';
 
         function resizeCanvas() {
-            // 브라우저 툴바가 자리를 잡을 시간을 줍니다 (0.2초)
+            // 0.2초 지연을 주어 UI가 완전히 자리 잡은 후 측정
             setTimeout(() => {
                 const container = document.getElementById('game-container');
-                const header = document.getElementById('ui-header');
-                
-                // 실제 사용 가능한 전체 화면 높이
-                const totalHeight = window.innerHeight;
-                // 상단 광고(50px) + 하단 광고(100px) + 헤더 높이
-                const occupiedHeight = 50 + 100 + header.offsetHeight;
+                if (!container) return;
 
+                // 부모 박스의 실제 픽셀 크기를 그대로 캔버스에 할당
                 canvas.width = Math.min(container.clientWidth, 500);
-                
-                // 전체에서 고정 요소들을 뺀 나머지를 캔버스 높이로 설정
-                const finalHeight = totalHeight - occupiedHeight;
-                canvas.height = Math.floor(finalHeight);
-                
-                // 바구니(캐릭터) 위치 재설정
+                canvas.height = container.clientHeight;
+
+                // 캐릭터 위치 재조정 (바닥에서 80px 위)
                 basket.x = canvas.width / 2 - 35;
                 basket.y = canvas.height - 80;
                 
@@ -437,13 +437,10 @@
             }, 200);
         }
         
-        // 화면 회전이나 크기 변경 시 다시 실행
+        // 여러 이벤트에 대응하여 화면을 다시 그리게 함
         window.addEventListener('resize', resizeCanvas);
-        window.addEventListener('orientationchange', () => {
-            setTimeout(() => {
-                resizeCanvas();
-            }, 300);
-        });
+        window.addEventListener('load', resizeCanvas);
+        window.addEventListener('orientationchange', resizeCanvas);
         resizeCanvas();
 
         function startGame() {
