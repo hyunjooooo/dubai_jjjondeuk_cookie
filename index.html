@@ -45,6 +45,14 @@
             flex-shrink: 0; 
             border-top: 4px solid #444;
         }
+        
+        @media (max-width: 768px) {
+            .ad-bottom {
+                height: 100px;
+                line-height: 100px;
+                font-size: 14px;
+            }
+        }
         /* 전면 광고용 오버레이 (성공 시 노출) */
         #interstitial-ad {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -133,8 +141,9 @@
             #buy-btn-mobile { 
                 width: 60px;
                 height: 60px;
-                top: 8px;
+                top: 50%;
                 right: 8px;
+                transform: translateY(-50%);
             }
             #buy-btn-text-mobile { 
                 font-size: 0.65rem;
@@ -228,6 +237,7 @@
         const imgDdong = new Image(); imgDdong.src = 'ddong.png';
         const imgDubai = new Image(); imgDubai.src = 'dubai.png';
         const imgCoin = new Image(); imgCoin.src = 'coin.png';
+        const imgBackground = new Image(); imgBackground.src = 'start.png'; // 배경 이미지 (필요시 다른 이미지로 변경 가능)
 
         function resizeCanvas() {
             canvas.width = Math.min(container.clientWidth, 500);
@@ -411,6 +421,18 @@
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 배경 이미지 그리기
+            if (imgBackground.complete && imgBackground.naturalWidth > 0) {
+                ctx.save();
+                ctx.globalAlpha = 0.5; // 배경 이미지를 반투명하게
+                ctx.drawImage(imgBackground, 0, 0, canvas.width, canvas.height);
+                ctx.restore();
+            } else {
+                // 배경 이미지가 없을 경우 기본 배경색
+                ctx.fillStyle = "#2c2c2c";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
 
             // 파티클(숫자 효과) 그리기
             particles.forEach(p => {
