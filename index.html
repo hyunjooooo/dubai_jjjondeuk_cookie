@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>두바이쫀득쿠키: 사먹자 서민들아</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+        * { box-sizing: border-box; }
+        body { text-align: center; background: #1a1a1a; font-family: 'Jua', sans-serif; margin: 0; padding: 0; overflow: hidden; color: white; touch-action: none; display: flex; flex-direction: column; height: 100vh; }
+        .ad-top { background: #333; height: 50px; line-height: 50px; font-size: 11px; color: #888; flex-shrink: 0; }
+        #ui-header { padding: 15px 10px; background: #222; flex-shrink: 0; border-bottom: 2px solid #444; }
+        .title { color: #ffeb3b; font-size: 1.4rem; margin-bottom: 5px; }
+        .price-tag { color: #ff5252; font-size: 1.1rem; }
+        .stats-text { font-size: 1.2rem; color: #4caf50; }
+        .time-text { font-size: 1.1rem; color: #2196f3; }
+        .best-time { font-size: 0.9rem; color: #ff9800; }
+        #game-container { flex-grow: 1; position: relative; overflow: hidden; background: #222; display: flex; justify-content: center; }
+        canvas { background: #2c2c2c; display: block; }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #start-screen { background-color: #1a1a1a; background-image: url('start.png'); background-size: contain; background-position: center; background-repeat: no-repeat; }
+        .overlay h1 { color: #ffeb3b; font-size: 2.5rem; margin-bottom: 20px; text-shadow: 2px 2px #000; }
+        .overlay p { text-shadow: 2px 2px #000; }
+        .start-content { background: rgba(0, 0, 0, 0.7); padding: 30px 40px; border-radius: 20px; margin-bottom: 20px; backdrop-filter: blur(5px); }
+        .btn-main { padding: 15px 40px; font-size: 1.5rem; font-family: 'Jua'; background: #4caf50; color: white; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 0 #2e7d32; }
+        #hint-box { position: absolute; top: 50%; z-index: 30; pointer-events: none; }
+        #hint-box img { width: 80px; height: auto; display: inline-block; vertical-align: middle; margin-right: 10px; object-fit: contain; }
+        #hint-box-text { display: inline-block; vertical-align: middle; color: white; font-size: 1.4rem; line-height: 1.5; font-weight: normal; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+        #hint-box-text .highlight { color: #ffeb3b; }
+        #buy-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 90px; height: 90px; border-radius: 50%; border: none; background: #555; color: #888; font-family: 'Jua'; font-size: 1.2rem; cursor: pointer; z-index: 30; box-shadow: 0 6px 0 #333; outline: none; padding: 0; overflow: hidden; transition: background 0.3s, box-shadow 0.3s; }
+        #buy-btn img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; transition: opacity 0.3s, filter 0.3s; filter: grayscale(100%); }
+        #buy-btn.active { background: #ffeb3b; box-shadow: 0 6px 0 #c4a700; }
+        #buy-btn.active img { opacity: 1; filter: grayscale(0%); }
+        #buy-btn-text { position: absolute; bottom: 5px; left: 0; right: 0; font-size: 0.9rem; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); font-weight: bold; z-index: 2; text-align: center; }
+        /* 팝업 메시지 스타일 */
+        #msg-pop { position: absolute; width: 100%; top: 30%; left: 0; font-size: 2.2rem; display: none; text-shadow: 3px 3px #000; z-index: 20; font-weight: bold; pointer-events: none; }
+        /* 하단 광고 영역 확대 (수익 극대화 배치) */
+        .ad-bottom { 
+            background: #333; 
+            height: 250px; /* 큰 사각형 광고(Medium Rectangle)가 들어갈 수 있는 크기 */
+            line-height: 250px; 
+            color: #ffeb3b; 
+            font-size: 16px; 
+            flex-shrink: 0; 
+            border-top: 4px solid #444;
+        }
+        /* 전면 광고용 오버레이 (성공 시 노출) */
+        #interstitial-ad {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 200;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .ad-placeholder {
+            width: 300px; height: 450px; background: #444; border: 2px dashed #999;
+            display: flex; align-items: center; justify-content: center; color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="ad-top">광고 영역</div>
+    <div id="start-screen" class="overlay">
+        <div class="start-content">
+            <h1>💸<br>두바이쫀득쿠키<br>사먹자 서민들아</h1>
+            <p>폭등하는 물가를 뚫고 쿠키 10개를 쟁취하십시오.</p>
+        </div>
+        <button class="btn-main" onclick="startGame()">게임 시작</button>
+    </div>
+    <div id="end-screen" class="overlay" style="display: none;">
+        <h1 style="color: #4caf50;">🎉 성공한 서민!</h1>
+        <p>당신은 집념의 서민입니다.<br>두바이 쿠키 10개를 다 모았습니다!</p>
+        <p style="font-size: 1.3rem; color: #ffeb3b; margin: 20px 0;">플레이 시간: <span id="end-time">0</span>초</p>
+        <button class="btn-main" onclick="location.reload()">다시 하기</button>
+    </div>
+    <div id="ui-header">
+        <div class="title">💸 떡상하는 두바이쫀득쿠키</div>
+        <div class="price-tag">현재 시세: <span id="current-price">4,000</span>원</div>
+        <div class="stats-text">잔고: <span id="money">0</span>원 | 쿠키: <span id="inventory" style="color:#ffeb3b">0</span>개</div>
+        <div class="time-text">플레이 시간: <span id="play-time">0</span>초 | 최고 기록: <span id="best-time" class="best-time">-</span></div>
+    </div>
+    <div id="game-container">
+        <div id="hint-box">
+            <span id="hint-box-text">돈을 모아 오른쪽 버튼으로<br><span class="highlight">두쫀쿠 10개</span>를 구매하세요</span>
+        </div>
+        <div id="msg-pop"></div>
+        <canvas id="gameCanvas"></canvas>
+        <button id="buy-btn" onclick="buyCookie()">
+            <img id="buy-dubai-img" src="dubai.png" alt="두바이">
+            <span id="buy-btn-text">돈 부족</span>
+        </button>
+    </div>
+    <div class="ad-bottom">광고 영역</div>
+    <div id="interstitial-ad">
+        <div style="margin-bottom: 20px; color: #ffeb3b;">▼ 전면 광고 영역 (수익 5배!)</div>
+        <div class="ad-placeholder">여기에 구글 전면 광고 코드가 들어갑니다.</div>
+        <button class="btn-main" style="margin-top: 20px; background: #666;" onclick="closeAd()">광고 닫고 결과 보기</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        // 이미지 렌더링 품질 개선
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        const buyBtn = document.getElementById('buy-btn');
+        const msgPop = document.getElementById('msg-pop');
+        const container = document.getElementById('game-container');
+        
+        let gameState = 'ready';
+        let money = 0, cookiePrice = 4000, inventory = 0;
+        let items = [], particles = [];
+        let basket = { x: 0, y: 0, w: 80, h: 80 };
+        let globalSpeed = 6, spawnRate = 650, lastSpawnTime = 0;
+        let gameStartTime = 0;
+        let gameTimer = null;
+        
+        // 최고 기록 불러오기
+        function loadBestTime() {
+            const bestTime = localStorage.getItem('dubaiCookieBestTime');
+            if (bestTime) {
+                document.getElementById('best-time').textContent = parseFloat(bestTime).toFixed(1) + '초';
+            }
+        }
+        
+        // 최고 기록 저장
+        function saveBestTime(time) {
+            const bestTime = localStorage.getItem('dubaiCookieBestTime');
+            if (!bestTime || parseFloat(time) < parseFloat(bestTime)) {
+                localStorage.setItem('dubaiCookieBestTime', time.toString());
+                document.getElementById('best-time').textContent = parseFloat(time).toFixed(1) + '초';
+            }
+        }
+        
+        loadBestTime();
+
+        const failMsgs = ["잔고 떡락", "무소유 실천", "기부천사", "어이쿠", "아이쿠"];
+        const imgDdong = new Image(); imgDdong.src = 'ddong.png';
+        const imgDubai = new Image(); imgDubai.src = 'dubai.png';
+        const imgCoin = new Image(); imgCoin.src = 'coin.png';
+
+        function resizeCanvas() {
+            canvas.width = Math.min(container.clientWidth, 500);
+            canvas.height = container.clientHeight;
+            basket.x = canvas.width / 2 - 40;
+            basket.y = canvas.height - 90;
+            
+            // canvas의 실제 위치를 getBoundingClientRect로 정확히 계산
+            setTimeout(() => {
+                const canvasRect = canvas.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                const spacing = 20; // canvas와 좌우 요소 사이의 간격
+                
+                // canvas의 왼쪽 끝 위치 (container 기준)
+                const canvasLeftInContainer = canvasRect.left - containerRect.left;
+                // canvas의 오른쪽 끝 위치 (container 기준)
+                const canvasRightInContainer = canvasRect.right - containerRect.left;
+                
+                // 힌트 박스를 canvas 왼쪽 밖에 배치
+                const hintBox = document.getElementById('hint-box');
+                hintBox.style.left = (canvasLeftInContainer - spacing) + 'px';
+                hintBox.style.transform = 'translateX(-100%) translateY(-50%)';
+                hintBox.style.textAlign = 'right';
+                
+                // 구매 버튼을 canvas 오른쪽 밖에 배치
+                const btnLeft = canvasRightInContainer + spacing;
+                buyBtn.style.left = btnLeft + 'px';
+                buyBtn.style.right = 'auto';
+            }, 0);
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function startGame() {
+            if (gameState !== 'ready') return;
+            gameState = 'playing';
+            document.getElementById('start-screen').style.display = 'none';
+            lastSpawnTime = performance.now();
+            gameStartTime = performance.now();
+            
+            // 타이머 시작
+            gameTimer = setInterval(() => {
+                if (gameState === 'playing') {
+                    const elapsed = (performance.now() - gameStartTime) / 1000;
+                    document.getElementById('play-time').textContent = elapsed.toFixed(1);
+                }
+            }, 100);
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        setInterval(() => {
+            if (gameState !== 'playing') return;
+            cookiePrice += Math.floor(Math.random() * 150) + 150;
+            document.getElementById('current-price').innerText = cookiePrice.toLocaleString();
+            updateBuyButton();
+        }, 1200);
+
+        function updateBuyButton() {
+            const buyBtnText = document.getElementById('buy-btn-text');
+            if (money >= cookiePrice) {
+                buyBtn.classList.add('active');
+                buyBtnText.textContent = "구매";
+            } else {
+                buyBtn.classList.remove('active');
+                buyBtnText.textContent = "돈 부족";
+            }
+        }
+
+        function showMsg(text, color) {
+            msgPop.innerText = text;
+            msgPop.style.color = color;
+            msgPop.style.display = 'block';
+            setTimeout(() => { msgPop.style.display = 'none'; }, 700);
+        }
+
+        function createParticle(x, y, text, color) {
+            particles.push({ x, y, text, color, opacity: 1, life: 40 });
+        }
+
+        function buyCookie() {
+            if (gameState !== 'playing') return;
+            if (money >= cookiePrice) {
+                money -= cookiePrice;
+                inventory++;
+                showMsg("Flex!", "#ffeb3b");
+                updateBuyButton();
+                globalSpeed += 0.5;
+                spawnRate = Math.max(150, spawnRate - 60);
+                if (inventory >= 10) endGame();
+            }
+        }
+
+        function endGame() {
+            gameState = 'end';
+            
+            // 타이머 정지 및 최고 기록 저장
+            if (gameTimer) {
+                clearInterval(gameTimer);
+                gameTimer = null;
+            }
+            const finalTime = (performance.now() - gameStartTime) / 1000;
+            saveBestTime(finalTime);
+            
+            // 1. 먼저 전면 광고를 보여줌
+            document.getElementById('interstitial-ad').style.display = 'flex';
+        }
+
+        // 광고 닫기 함수
+        function closeAd() {
+            document.getElementById('interstitial-ad').style.display = 'none';
+            // 2. 그 다음 성공 화면을 보여줌
+            const finalTime = (performance.now() - gameStartTime) / 1000;
+            document.getElementById('end-time').textContent = finalTime.toFixed(1);
+            document.getElementById('end-screen').style.display = 'flex';
+        }
+
+        function spawnItem() {
+            const rand = Math.random();
+            let type = (rand < 0.25) ? 'poop' : (rand < 0.30 ? 'real' : 'coin');
+            items.push({ x: Math.random() * (canvas.width - 50), y: -50, type: type, speed: globalSpeed + Math.random() * 2 });
+        }
+
+        function update(time) {
+            if (time - lastSpawnTime > 2000) lastSpawnTime = time;
+            if (time - lastSpawnTime > spawnRate) {
+                spawnItem();
+                lastSpawnTime = time;
+            }
+
+            for (let i = items.length - 1; i >= 0; i--) {
+                items[i].y += items[i].speed;
+                if (items[i].y + 40 > basket.y && items[i].x < basket.x + basket.w && items[i].x + 40 > basket.x) {
+                    if (items[i].type === 'coin') {
+                        money += 500;
+                        createParticle(items[i].x, items[i].y, "+500", "#4caf50");
+                    } else if (items[i].type === 'poop') {
+                        let loss = Math.floor(money * 0.3);
+                        money -= loss;
+                        createParticle(items[i].x, items[i].y, `-${loss}`, "#ff5252");
+                        showMsg(failMsgs[Math.floor(Math.random() * failMsgs.length)], "#ff5252");
+                    } else if (items[i].type === 'real') {
+                        inventory++;
+                        showMsg("럭키!", "#4caf50");
+                        if (inventory >= 10) endGame();
+                    }
+                    updateBuyButton();
+                    items.splice(i, 1);
+                    continue;
+                }
+                if (items[i].y > canvas.height) items.splice(i, 1);
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].y -= 1.2;
+                particles[i].opacity -= 0.025;
+                if (particles[i].opacity <= 0) particles.splice(i, 1);
+            }
+
+            document.getElementById('money').innerText = money.toLocaleString();
+            document.getElementById('inventory').innerText = inventory;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 파티클(숫자 효과) 그리기
+            particles.forEach(p => {
+                ctx.fillStyle = `rgba(${p.color === '#4caf50' ? '76,175,80' : '255,82,82'}, ${p.opacity})`;
+                ctx.font = "bold 22px Jua";
+                ctx.fillText(p.text, p.x, p.y);
+            });
+
+            ctx.fillStyle = "#5d4037";
+            ctx.fillRect(basket.x, basket.y, basket.w, basket.h);
+            ctx.fillStyle = "white"; ctx.font = "15px Jua"; ctx.fillText("서민(나)", basket.x + 18, basket.y + 45);
+
+            items.forEach(item => {
+                if (item.type === 'coin' && imgCoin.complete && imgCoin.naturalWidth > 0) {
+                    const targetHeight = 50;
+                    const aspectRatio = imgCoin.naturalWidth / imgCoin.naturalHeight;
+                    const targetWidth = targetHeight * aspectRatio;
+                    // 고품질 렌더링을 위해 스무딩 재설정
+                    ctx.save();
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.drawImage(imgCoin, item.x, item.y, targetWidth, targetHeight);
+                    ctx.restore();
+                } else if (item.type === 'poop' && imgDdong.complete && imgDdong.naturalWidth > 0) {
+                    const targetHeight = 50;
+                    const aspectRatio = imgDdong.naturalWidth / imgDdong.naturalHeight;
+                    const targetWidth = targetHeight * aspectRatio;
+                    ctx.drawImage(imgDdong, item.x, item.y, targetWidth, targetHeight);
+                } else if (item.type === 'real' && imgDubai.complete && imgDubai.naturalWidth > 0) {
+                    const targetHeight = 50;
+                    const aspectRatio = imgDubai.naturalWidth / imgDubai.naturalHeight;
+                    const targetWidth = targetHeight * aspectRatio;
+                    ctx.drawImage(imgDubai, item.x, item.y, targetWidth, targetHeight);
+                } else {
+                    ctx.font = "40px Arial";
+                    let icon = item.type === 'coin' ? "🪙" : (item.type === 'poop' ? "💩" : "🍪");
+                    ctx.fillText(icon, item.x, item.y + 35);
+                }
+            });
+        }
+
+        const moveBasket = (e) => {
+            if (gameState !== 'playing') return;
+            let clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            let rect = canvas.getBoundingClientRect();
+            basket.x = clientX - rect.left - basket.w / 2;
+            if (basket.x < 0) basket.x = 0;
+            if (basket.x > canvas.width - basket.w) basket.x = canvas.width - basket.w;
+        };
+
+        window.addEventListener('mousemove', moveBasket);
+        window.addEventListener('touchmove', moveBasket, { passive: false });
+
+        function gameLoop(time) {
+            if (gameState === 'playing') {
+                update(time);
+                draw();
+                requestAnimationFrame(gameLoop);
+            }
+        }
+    </script>
+</body>
+</html>
