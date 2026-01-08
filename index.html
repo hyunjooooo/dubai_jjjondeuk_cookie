@@ -14,8 +14,14 @@
             document.documentElement.scrollTop = 0;
             if (document.body) document.body.scrollTop = 0;
             
-            // 즉시 스크롤 방지
+            // 즉시 스크롤 방지 및 높이 설정 (모든 브라우저 호환)
             function immediateLock() {
+                // 실제 viewport 높이 가져오기
+                let vh = window.innerHeight;
+                if (window.visualViewport && window.visualViewport.height) {
+                    vh = window.visualViewport.height;
+                }
+                
                 // 스크롤 위치 강제 고정
                 window.scrollTo(0, 0);
                 if (document.documentElement) {
@@ -23,6 +29,15 @@
                 }
                 if (document.body) {
                     document.body.scrollTop = 0;
+                    // 모든 브라우저에서 높이 설정 (100dvh fallback)
+                    if (vh > 0) {
+                        // 현재 높이와 차이가 있으면 업데이트
+                        const currentHeight = document.body.offsetHeight || document.body.clientHeight;
+                        if (Math.abs(currentHeight - vh) > 5) {
+                            document.body.style.height = vh + 'px';
+                            document.body.style.maxHeight = vh + 'px';
+                        }
+                    }
                 }
             }
             
@@ -60,7 +75,9 @@
             padding: 0 !important;
             width: 100vw !important;
             height: 100vh !important;
+            height: 100dvh !important; /* 동적 viewport 높이 (모바일 브라우저 주소창 대응) */
             max-height: 100vh !important;
+            max-height: 100dvh !important;
             overflow: hidden !important;
             position: relative !important;
             display: flex !important;
