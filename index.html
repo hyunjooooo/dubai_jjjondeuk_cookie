@@ -8,85 +8,67 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7258774526539144" crossorigin="anonymous"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
-        
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        /* 1. 화면 밀림 및 스크롤 원천 차단 */
+        /* [핵심] 화면 고정 및 밀림 방지 */
         html, body {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
+            margin: 0; padding: 0; width: 100%; height: 100%;
             overflow: hidden; position: fixed;
             background: #1a1a1a; font-family: 'Jua', sans-serif;
             color: white; touch-action: none;
         }
+        body { display: flex; flex-direction: column; height: 100dvh; }
 
-        body {
-            display: flex; flex-direction: column;
-            height: 100dvh; /* 최신 아이폰 툴바 높이 대응 */
-        }
+        /* 광고 및 헤더 높이 고정 */
+        .ad-top { background: #333; height: 50px !important; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        #ui-header { padding: 15px 10px; background: #222; flex-shrink: 0; height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 2px solid #444; position: relative; }
+        .ad-bottom { background: #333; height: 100px !important; flex-shrink: 0; border-top: 4px solid #444; }
 
-        /* 2. 각 영역 높이 강제 고정 */
-        .ad-top {
-            background: #333; height: 50px !important; min-height: 50px;
-            flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-        }
-
-        #ui-header {
-            padding: 10px; background: #222; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            flex-shrink: 0; height: 120px; border-bottom: 2px solid #444;
-        }
-
-        .ad-bottom {
-            background: #333; height: 100px !important; min-height: 100px;
-            flex-shrink: 0; border-top: 4px solid #444;
-        }
-
-        /* 3. 게임 영역 (남는 공간을 꽉 채움) */
-        #game-container {
-            flex-grow: 1; position: relative; width: 100%;
-            background: #222; display: flex; justify-content: center; align-items: center;
-            overflow: hidden;
-        }
-
+        /* 게임 영역 */
+        #game-container { flex-grow: 1; position: relative; width: 100%; background: #222; overflow: hidden; display: flex; justify-content: center; align-items: center; }
         canvas { background: #2c2c2c; display: block; max-width: 100%; max-height: 100%; }
 
-        /* UI 요소 스타일 */
-        .title { color: #ffeb3b; font-size: 1.2rem; margin-bottom: 2px; }
-        .price-tag { color: #ff5252; font-size: 0.9rem; }
-        .stats-text { font-size: 1rem; color: #4caf50; }
-        .time-text { font-size: 0.8rem; color: #2196f3; }
-        
-        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .start-content { background: rgba(0, 0, 0, 0.7); padding: 20px; border-radius: 20px; margin-bottom: 20px; text-align: center; }
-        .btn-main { padding: 15px 35px; font-size: 1.5rem; font-family: 'Jua'; background: #4caf50; color: white; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 0 #2e7d32; }
-        
-        #buy-btn-mobile { 
-            position: absolute; top: 50%; right: 10px; transform: translateY(-50%); 
-            width: 70px; height: 70px; border-radius: 50%; border: none; background: #555; 
-            z-index: 50; box-shadow: 0 4px 0 #333; overflow: hidden; display: block;
-        }
-        #buy-btn-mobile img { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; }
-        #buy-btn-mobile.active { background: #ffeb3b; }
-        #buy-btn-mobile.active img { opacity: 1; }
-        #buy-btn-text-mobile { position: absolute; bottom: 5px; left: 0; right: 0; font-size: 0.7rem; color: white; text-shadow: 1px 1px 2px #000; font-weight: bold; text-align: center; }
+        /* UI 텍스트 스타일 */
+        .title { color: #ffeb3b; font-size: 1.4rem; margin-bottom: 5px; }
+        .price-tag { color: #ff5252; font-size: 1.1rem; }
+        .stats-text { font-size: 1.2rem; color: #4caf50; }
+        .time-text { font-size: 1.1rem; color: #2196f3; }
 
-        #interstitial-ad { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 200; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        
-        @media (min-width: 769px) {
-            #buy-btn-mobile { display: none; }
-            #buy-btn { position: absolute; top: 50%; right: -110px; transform: translateY(-50%); width: 90px; height: 90px; border-radius: 50%; border: none; background: #555; cursor: pointer; display: block; overflow: hidden; }
-            #buy-btn.active { background: #ffeb3b; }
-            #buy-btn img { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; }
-            #buy-btn.active img { opacity: 1; }
-            #buy-btn-text { position: absolute; bottom: 8px; left: 0; right: 0; color: white; font-size: 0.9rem; text-align: center; font-weight: bold; }
+        /* 오버레이 (메인, 엔드, 정보 화면) */
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        #start-screen { background-image: url('start.png'); background-size: cover; background-position: center; }
+        .start-content { background: rgba(0, 0, 0, 0.7); padding: 30px; border-radius: 20px; margin-bottom: 20px; backdrop-filter: blur(5px); text-align: center; }
+        .btn-main { padding: 15px 40px; font-size: 1.5rem; font-family: 'Jua'; background: #4caf50; color: white; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 0 #2e7d32; }
+
+        /* SNS 버튼 스타일 복구 */
+        .insta-btn {
+            padding: 8px 16px; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+            color: white; border-radius: 20px; text-decoration: none; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; margin-top: 10px;
         }
+
+        /* 구매 버튼 스타일 */
+        #buy-btn-mobile { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); width: 75px; height: 75px; border-radius: 50%; border: none; background: #555; overflow: hidden; display: block; }
+        #buy-btn-mobile.active { background: #ffeb3b; box-shadow: 0 0 15px #ffeb3b; }
+        #buy-btn-mobile img { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
+        #buy-btn-mobile.active img { opacity: 1; }
+        #buy-btn-text-mobile { position: absolute; bottom: 5px; left: 0; right: 0; font-size: 0.75rem; color: white; text-shadow: 1px 1px 2px #000; font-weight: bold; text-align: center; }
+
+        #msg-pop { position: absolute; width: 100%; top: 30%; font-size: 2.2rem; display: none; text-shadow: 3px 3px #000; z-index: 20; font-weight: bold; text-align: center; }
+        #interstitial-ad { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 200; display: none; flex-direction: column; align-items: center; justify-content: center; }
+
         @media (max-width: 768px) { #buy-btn { display: none; } }
+        @media (min-width: 769px) { 
+            #buy-btn-mobile { display: none; }
+            #buy-btn { position: absolute; top: 50%; right: 20px; transform: translateY(-50%); width: 90px; height: 90px; border-radius: 50%; border: none; background: #555; cursor: pointer; overflow: hidden; }
+            #buy-btn.active { background: #ffeb3b; }
+            #buy-btn img { width: 100%; height: 100%; object-fit: cover; }
+            #buy-btn-text { position: absolute; bottom: 8px; left: 0; right: 0; color: white; font-size: 0.9rem; font-weight: bold; }
+        }
     </style>
 </head>
 <body oncontextmenu="return false;">
     <div class="ad-top">
-        <ins class="adsbygoogle" style="display:block;width:100%;height:50px" data-ad-client="ca-pub-7258774526539144" data-ad-slot="4113884601" data-ad-format="horizontal" data-full-width-responsive="false"></ins>
+        <ins class="adsbygoogle" style="display:block;width:100%;height:50px" data-ad-client="ca-pub-7258774526539144" data-ad-slot="4113884601" data-ad-format="horizontal"></ins>
         <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
 
@@ -103,16 +85,40 @@
     <div id="game-container">
         <div id="start-screen" class="overlay">
             <div class="start-content">
-                <h1 style="color:#ffeb3b; margin:0;">🍪<br>두바이쫀득쿠키<br>사먹자 서민들아</h1>
-                <p>물가를 뚫고 쿠키 10개를 쟁취하세요!</p>
+                <h1>💸<br>두바이쫀득쿠키<br>사먹자 서민들아</h1>
+                <p>폭등하는 물가를 뚫고 쿠키 10개를 쟁취하십시오.</p>
+                <a href="https://www.instagram.com/dubai_jjjondeuk_cookie/" target="_blank" class="insta-btn">📸 인스타그램 구경가기</a>
             </div>
             <div style="display:flex; gap:10px;">
                 <button class="btn-main" onclick="startGame()">게임 시작</button>
-                <button class="btn-main" style="background:#666;" onclick="showInfo()">방법</button>
+                <button class="btn-main" style="background:#666;" onclick="showInfo()">게임 방법</button>
             </div>
-            <button class="btn-main" style="margin-top:15px; background:#4A90E2; font-size:1rem; padding:10px 20px;" onclick="shareGame()">🔗 링크 공유</button>
+            <button class="btn-main" style="margin-top:15px; background:#4A90E2; font-size:1rem; padding:10px 20px;" onclick="shareGame()">🔗 게임 링크 복사</button>
         </div>
-        <div id="msg-pop" style="position:absolute; top:30%; font-size:2rem; display:none; z-index:20; font-weight:bold; text-align:center; width:100%;"></div>
+
+        <div id="end-screen" class="overlay" style="display: none;">
+            <h1 style="color: #4caf50;">🎉 성공한 서민!</h1>
+            <p>두바이 쿠키 10개를 다 모았습니다!</p>
+            <p style="font-size: 1.3rem; color: #ffeb3b; margin: 20px 0;">플레이 시간: <span id="end-time">0</span>초</p>
+            <button class="btn-main" onclick="location.reload()">다시 하기</button>
+        </div>
+
+        <div id="info-screen" class="overlay" style="display: none;">
+            <div style="padding: 20px; color: #ccc; font-size: 0.9rem; text-align: left; max-width: 500px; background: rgba(0,0,0,0.9); border-radius: 15px; line-height: 1.6;">
+                <h3 style="color: #ffeb3b; margin-top: 0;">🎮 게임 방법</h3>
+                <p>급격히 상승하는 물가를 견디며 코인을 모아 쿠키 10개를 구매하세요!</p>
+                <ul>
+                    <li><b>조작:</b> 마우스나 터치로 좌우 이동</li>
+                    <li><b>아이템:</b> 코인은 돈(+500), 똥은 벌금(-30%)</li>
+                    <li><b>목표:</b> 시세가 너무 오르기 전에 10개 구매!</li>
+                </ul>
+                <hr style="border:0.5px solid #444;">
+                <p style="font-size:10px; color:#666;">본 사이트는 애드센스 광고 송출을 위해 쿠키를 사용할 수 있습니다.</p>
+                <button class="btn-main" style="width:100%; margin-top:15px;" onclick="closeInfo()">닫기</button>
+            </div>
+        </div>
+
+        <div id="msg-pop"></div>
         <canvas id="gameCanvas"></canvas>
         <button id="buy-btn" onclick="buyCookie()">
             <img src="dubai.png"><span id="buy-btn-text">돈 부족</span>
@@ -120,23 +126,15 @@
     </div>
 
     <div class="ad-bottom">
-        <ins class="adsbygoogle" style="display:block;width:100%;height:100px" data-ad-client="ca-pub-7258774526539144" data-ad-slot="3832164645" data-ad-format="horizontal" data-full-width-responsive="false"></ins>
+        <ins class="adsbygoogle" style="display:block;width:100%;height:100px" data-ad-client="ca-pub-7258774526539144" data-ad-slot="3832164645" data-ad-format="horizontal"></ins>
         <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
 
     <div id="interstitial-ad">
-        <div style="margin-bottom: 20px; color: #ffeb3b; text-align:center;">▼ 전면 광고 (수익 5배!)</div>
+        <div style="margin-bottom: 20px; color: #ffeb3b;">▼ 전면 광고 영역</div>
         <ins class="adsbygoogle" style="display:block;width:300px;height:250px" data-ad-client="ca-pub-7258774526539144" data-ad-slot="2800802932" data-ad-format="rectangle"></ins>
         <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         <button class="btn-main" style="margin-top: 20px; background: #666;" onclick="closeAd()">광고 닫고 결과 보기</button>
-    </div>
-
-    <div id="info-screen" class="overlay" style="display:none;">
-        <div style="background:rgba(0,0,0,0.9); padding:20px; border-radius:15px; max-width:90%;">
-            <h3 style="color:#ffeb3b;">🎮 게임 방법</h3>
-            <p>좌우로 움직여 코인을 먹고 똥을 피하세요!<br>시세가 오르기 전 쿠키 10개를 사면 성공!</p>
-            <button class="btn-main" onclick="closeInfo()">닫기</button>
-        </div>
     </div>
 
     <script>
@@ -145,7 +143,7 @@
         const container = document.getElementById('game-container');
         
         let gameState = 'ready', money = 0, cookiePrice = 4000, inventory = 0;
-        let items = [], particles = [], lastSpawnTime = 0, gameStartTime = 0;
+        let items = [], lastSpawnTime = 0, gameStartTime = 0;
         let basket = { x: 0, y: 0, w: 70, h: 70 };
 
         const imgDdong = new Image(); imgDdong.src = 'ddong.png';
@@ -154,7 +152,6 @@
 
         function resizeCanvas() {
             setTimeout(() => {
-                const vh = window.innerHeight;
                 canvas.width = container.clientWidth;
                 canvas.height = container.clientHeight;
                 basket.x = canvas.width / 2 - 35;
@@ -172,11 +169,11 @@
             requestAnimationFrame(gameLoop);
             setInterval(() => {
                 if(gameState === 'playing') {
-                    cookiePrice += Math.floor(Math.random() * 100) + 100;
+                    cookiePrice += Math.floor(Math.random() * 150) + 150;
                     document.getElementById('current-price').innerText = cookiePrice.toLocaleString();
                     updateUI();
                 }
-            }, 1500);
+            }, 1200);
         }
 
         function updateUI() {
@@ -185,11 +182,12 @@
             const elapsed = (performance.now() - gameStartTime) / 1000;
             if(gameState === 'playing') document.getElementById('play-time').textContent = elapsed.toFixed(1);
 
-            [document.getElementById('buy-btn-mobile'), document.getElementById('buy-btn')].forEach(btn => {
+            const btns = [document.getElementById('buy-btn-mobile'), document.getElementById('buy-btn')];
+            btns.forEach(btn => {
                 if(!btn) return;
                 const txt = btn.querySelector('span');
-                if(money >= cookiePrice) { btn.classList.add('active'); txt.innerText = "구매"; }
-                else { btn.classList.remove('active'); txt.innerText = "돈 부족"; }
+                if(money >= cookiePrice) { btn.classList.add('active'); if(txt) txt.innerText = "구매"; }
+                else { btn.classList.remove('active'); if(txt) txt.innerText = "돈 부족"; }
             });
         }
 
@@ -215,29 +213,30 @@
 
         function closeAd() {
             document.getElementById('interstitial-ad').style.display = 'none';
-            alert(`🎉 성공! 기록: ${document.getElementById('play-time').textContent}초`);
-            location.reload();
+            document.getElementById('end-time').innerText = document.getElementById('play-time').innerText;
+            document.getElementById('end-screen').style.display = 'flex';
         }
 
         function shareGame() {
             const url = window.location.href;
-            navigator.clipboard.writeText(url).then(() => alert("링크가 복사되었습니다!"));
+            navigator.clipboard.writeText(url).then(() => alert("게임 링크가 복사되었습니다! 친구들에게 공유해보세요!"));
         }
+
+        function showInfo() { document.getElementById('info-screen').style.display = 'flex'; }
+        function closeInfo() { document.getElementById('info-screen').style.display = 'none'; }
 
         function gameLoop(time) {
             if(gameState !== 'playing') return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            if(time - lastSpawnTime > 700) {
+            if(time - lastSpawnTime > 650) {
                 const r = Math.random();
-                items.push({ x: Math.random()*(canvas.width-40), y: -50, type: r<0.2?'poop':(r<0.25?'real':'coin'), speed: 5 });
+                items.push({ x: Math.random()*(canvas.width-45), y: -50, type: r<0.25?'poop':(r<0.3?'real':'coin'), speed: 6 });
                 lastSpawnTime = time;
             }
 
             for(let i=items.length-1; i>=0; i--) {
-                const it = items[i];
-                it.y += it.speed;
-                
+                const it = items[i]; it.y += it.speed;
                 let img = it.type === 'poop' ? imgDdong : (it.type === 'real' ? imgDubai : imgCoin);
                 if(img.complete) ctx.drawImage(img, it.x, it.y, 45, 45);
 
@@ -249,10 +248,8 @@
                 } else if(it.y > canvas.height) items.splice(i, 1);
             }
 
-            ctx.fillStyle = "#5d4037";
-            ctx.fillRect(basket.x, basket.y, basket.w, basket.h);
-            ctx.fillStyle = "white"; ctx.font = "14px Jua"; ctx.fillText("나(서민)", basket.x+15, basket.y+40);
-            
+            ctx.fillStyle = "#5d4037"; ctx.fillRect(basket.x, basket.y, basket.w, basket.h);
+            ctx.fillStyle = "white"; ctx.font = "14px Jua"; ctx.fillText("서민(나)", basket.x+15, basket.y+40);
             updateUI();
             requestAnimationFrame(gameLoop);
         }
@@ -267,9 +264,6 @@
         };
         window.addEventListener('mousemove', handleMove);
         window.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e); }, { passive: false });
-
-        function showInfo() { document.getElementById('info-screen').style.display = 'flex'; }
-        function closeInfo() { document.getElementById('info-screen').style.display = 'none'; }
     </script>
 </body>
 </html>
