@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
     <meta name="google-adsense-account" content="ca-pub-7258774526539144">
     <title>두바이쫀득쿠키: 사먹자 서민들아</title>
     <!-- Google AdSense -->
@@ -11,6 +11,9 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
         * { box-sizing: border-box; }
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
         html { 
             height: 100% !important; 
             width: 100% !important; 
@@ -23,12 +26,12 @@
             left: 0 !important;
             right: 0 !important;
             bottom: 0 !important;
+            -webkit-overflow-scrolling: none !important;
         }
         body {
             margin: 0 !important;
             padding: 0 !important;
             width: 100vw !important;
-            /* height는 JavaScript로 설정 - CSS에서는 제거 */
             overflow: hidden !important;
             position: fixed !important;
             top: 0 !important;
@@ -46,6 +49,7 @@
             overscroll-behavior: none !important;
             -webkit-user-select: none !important;
             user-select: none !important;
+            /* 높이는 JavaScript로 동적 설정 */
         }
         /* 광고 영역의 높이를 숫자로 고정 */
         .ad-top {
@@ -480,6 +484,7 @@
         }
         
         // 화면 고정 함수 (모바일 브라우저 강제 고정) - 광고 영역 유지
+        let lastKnownHeight = 0;
         function lockScreen() {
             // 즉시 스크롤 방지
             window.scrollTo(0, 0);
@@ -492,37 +497,48 @@
             
             // visualViewport API가 있으면 사용, 없으면 window.innerHeight 사용
             let viewportHeight;
-            if (window.visualViewport) {
-                viewportHeight = window.visualViewport.height;
+            if (window.visualViewport && window.visualViewport.height) {
+                viewportHeight = Math.floor(window.visualViewport.height);
             } else {
-                viewportHeight = window.innerHeight;
+                viewportHeight = Math.floor(window.innerHeight);
             }
             
-            // 광고 영역은 그대로 두고 body 높이만 설정
-            body.style.setProperty('position', 'fixed', 'important');
-            body.style.setProperty('top', '0', 'important');
-            body.style.setProperty('left', '0', 'important');
-            body.style.setProperty('right', '0', 'important');
-            body.style.setProperty('bottom', '0', 'important');
-            body.style.setProperty('width', '100vw', 'important');
-            body.style.setProperty('height', viewportHeight + 'px', 'important');
-            body.style.setProperty('min-height', viewportHeight + 'px', 'important');
-            body.style.setProperty('max-height', viewportHeight + 'px', 'important');
-            body.style.setProperty('overflow', 'hidden', 'important');
-            body.style.setProperty('margin', '0', 'important');
-            body.style.setProperty('padding', '0', 'important');
-            
-            // html도 동일하게 설정
-            html.style.setProperty('position', 'fixed', 'important');
-            html.style.setProperty('overflow', 'hidden', 'important');
-            html.style.setProperty('height', viewportHeight + 'px', 'important');
-            html.style.setProperty('width', '100%', 'important');
-            html.style.setProperty('margin', '0', 'important');
-            html.style.setProperty('padding', '0', 'important');
-            html.style.setProperty('top', '0', 'important');
-            html.style.setProperty('left', '0', 'important');
-            html.style.setProperty('right', '0', 'important');
-            html.style.setProperty('bottom', '0', 'important');
+            // 높이가 변경되었을 때만 업데이트 (불필요한 리플로우 방지)
+            if (viewportHeight !== lastKnownHeight && viewportHeight > 0) {
+                lastKnownHeight = viewportHeight;
+                
+                // 광고 영역은 그대로 두고 body 높이만 설정
+                body.style.setProperty('position', 'fixed', 'important');
+                body.style.setProperty('top', '0', 'important');
+                body.style.setProperty('left', '0', 'important');
+                body.style.setProperty('right', '0', 'important');
+                body.style.setProperty('bottom', '0', 'important');
+                body.style.setProperty('width', '100vw', 'important');
+                body.style.setProperty('height', viewportHeight + 'px', 'important');
+                body.style.setProperty('min-height', viewportHeight + 'px', 'important');
+                body.style.setProperty('max-height', viewportHeight + 'px', 'important');
+                body.style.setProperty('overflow', 'hidden', 'important');
+                body.style.setProperty('margin', '0', 'important');
+                body.style.setProperty('padding', '0', 'important');
+                
+                // html도 동일하게 설정
+                html.style.setProperty('position', 'fixed', 'important');
+                html.style.setProperty('overflow', 'hidden', 'important');
+                html.style.setProperty('height', viewportHeight + 'px', 'important');
+                html.style.setProperty('width', '100%', 'important');
+                html.style.setProperty('margin', '0', 'important');
+                html.style.setProperty('padding', '0', 'important');
+                html.style.setProperty('top', '0', 'important');
+                html.style.setProperty('left', '0', 'important');
+                html.style.setProperty('right', '0', 'important');
+                html.style.setProperty('bottom', '0', 'important');
+            } else {
+                // 높이가 같아도 스크롤 위치는 계속 확인
+                body.style.setProperty('position', 'fixed', 'important');
+                body.style.setProperty('top', '0', 'important');
+                html.style.setProperty('position', 'fixed', 'important');
+                html.style.setProperty('top', '0', 'important');
+            }
             
             // 광고 영역은 건들지 않음 (광고 수익 유지)
         }
@@ -652,12 +668,12 @@
             if (window.scrollY !== 0 || window.pageYOffset !== 0 || 
                 document.documentElement.scrollTop !== 0 || document.body.scrollTop !== 0) {
                 window.scrollTo(0, 0);
-                window.scrollTo(0, 0);
                 document.documentElement.scrollTop = 0;
                 document.body.scrollTop = 0;
             }
             requestAnimationFrame(continuousLock);
         }
+        // 즉시 시작
         continuousLock();
         
         // 초기 실행
