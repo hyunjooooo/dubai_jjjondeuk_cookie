@@ -494,65 +494,68 @@
             // 먼저 화면 고정
             lockScreen();
             
-            // 인앱 브라우저 툴바가 자리를 잡을 수 있게 0.3초의 여유를 줍니다.
-            setTimeout(() => {
-                // 다시 한번 화면 고정 (주소창 변화 대응)
-                lockScreen();
-                
-                const container = document.getElementById('game-container');
-                if (!container) return;
-                
-                // window.innerHeight를 직접 사용하여 정확한 높이 계산
-                let viewportHeight;
-                if (window.visualViewport && window.visualViewport.height) {
-                    viewportHeight = Math.floor(window.visualViewport.height);
-                } else {
-                    viewportHeight = Math.floor(window.innerHeight);
-                }
-                
-                // 고정된 요소들의 높이 (CSS에서 이미 고정됨)
-                const adTopHeight = 50;   // .ad-top: height: 50px !important
-                const adBottomHeight = 100; // .ad-bottom: height: 100px !important
-                const headerHeight = 120;   // #ui-header: height: 120px
-                
-                // container 높이를 직접 계산: 전체 높이에서 고정 요소들을 뺌
-                const containerHeight = Math.max(viewportHeight - adTopHeight - adBottomHeight - headerHeight, 200);
-                
-                // container의 높이를 직접 설정 (flex가 제대로 작동하지 않을 경우 대비)
-                container.style.height = containerHeight + 'px';
-                container.style.minHeight = containerHeight + 'px';
-                container.style.maxHeight = containerHeight + 'px';
+            // 즉시 실행 (setTimeout 제거)
+            const container = document.getElementById('game-container');
+            if (!container) return;
+            
+            // body의 실제 높이를 가져옴
+            const bodyHeight = document.body.offsetHeight || document.body.clientHeight;
+            let viewportHeight;
+            if (window.visualViewport && window.visualViewport.height) {
+                viewportHeight = Math.floor(window.visualViewport.height);
+            } else {
+                viewportHeight = Math.floor(window.innerHeight);
+            }
+            
+            // body 높이가 제대로 설정되지 않았으면 다시 설정
+            if (bodyHeight !== viewportHeight && viewportHeight > 0) {
+                document.body.style.height = viewportHeight + 'px';
+                document.documentElement.style.height = viewportHeight + 'px';
+            }
+            
+            // 고정된 요소들의 높이 (CSS에서 이미 고정됨)
+            const adTopHeight = 50;   // .ad-top: height: 50px !important
+            const adBottomHeight = 100; // .ad-bottom: height: 100px !important
+            const headerHeight = 120;   // #ui-header: height: 120px
+            
+            // container 높이를 직접 계산: 전체 높이에서 고정 요소들을 뺌
+            const containerHeight = Math.max(viewportHeight - adTopHeight - adBottomHeight - headerHeight, 200);
+            
+            // container의 높이를 직접 설정 (flex가 제대로 작동하지 않을 경우 대비)
+            container.style.height = containerHeight + 'px';
+            container.style.minHeight = containerHeight + 'px';
+            container.style.maxHeight = containerHeight + 'px';
 
-                // 중앙 게임 영역 박스의 실제 크기를 측정해서 캔버스에 입힙니다.
-                canvas.width = Math.min(container.clientWidth, 500);
-                canvas.height = containerHeight; // 계산된 높이 사용
+            // 중앙 게임 영역 박스의 실제 크기를 측정해서 캔버스에 입힙니다.
+            canvas.width = Math.min(container.clientWidth, 500);
+            canvas.height = containerHeight; // 계산된 높이 사용
 
-                // 캐릭터(바구니) 위치를 바닥에서 80px 위로 재조정합니다.
-                basket.x = canvas.width / 2 - 40;
-                basket.y = canvas.height - 80;
-                
-                // canvas의 실제 위치를 getBoundingClientRect로 정확히 계산
-                const containerRect = container.getBoundingClientRect();
-                const canvasRect = canvas.getBoundingClientRect();
-                const spacing = 20; // canvas와 좌우 요소 사이의 간격
-                
-                // canvas의 왼쪽 끝 위치 (container 기준)
-                const canvasLeftInContainer = canvasRect.left - containerRect.left;
-                // canvas의 오른쪽 끝 위치 (container 기준)
-                const canvasRightInContainer = canvasRect.right - containerRect.left;
-                
-                // 힌트 박스를 canvas 왼쪽 밖에 배치
-                const hintBox = document.getElementById('hint-box');
-                if (hintBox) {
+            // 캐릭터(바구니) 위치를 바닥에서 80px 위로 재조정합니다.
+            basket.x = canvas.width / 2 - 40;
+            basket.y = canvas.height - 80;
+            
+            // canvas의 실제 위치를 getBoundingClientRect로 정확히 계산
+            const containerRect = container.getBoundingClientRect();
+            const canvasRect = canvas.getBoundingClientRect();
+            const spacing = 20; // canvas와 좌우 요소 사이의 간격
+            
+            // canvas의 왼쪽 끝 위치 (container 기준)
+            const canvasLeftInContainer = canvasRect.left - containerRect.left;
+            // canvas의 오른쪽 끝 위치 (container 기준)
+            const canvasRightInContainer = canvasRect.right - containerRect.left;
+            
+            // 힌트 박스를 canvas 왼쪽 밖에 배치
+            const hintBox = document.getElementById('hint-box');
+            if (hintBox) {
                 hintBox.style.left = (canvasLeftInContainer - spacing) + 'px';
                 hintBox.style.transform = 'translateX(-100%) translateY(-50%)';
                 hintBox.style.textAlign = 'right';
-                }
-                
-                // 구매 버튼을 canvas 오른쪽 밖에 배치 (데스크톱만)
-                if (window.innerWidth > 768) {
-                    const buyBtn = document.getElementById('buy-btn');
-                    if (buyBtn) {
+            }
+            
+            // 구매 버튼을 canvas 오른쪽 밖에 배치 (데스크톱만)
+            if (window.innerWidth > 768) {
+                const buyBtn = document.getElementById('buy-btn');
+                if (buyBtn) {
                     const btnLeft = canvasRightInContainer + spacing;
                     buyBtn.style.left = btnLeft + 'px';
                     buyBtn.style.right = 'auto';
@@ -560,10 +563,9 @@
                     buyBtn.style.bottom = 'auto';
                     buyBtn.style.top = '50%';
                     buyBtn.style.transform = 'translateY(-50%)';
-                    }
                 }
-                // 모바일은 CSS의 fixed position으로 처리
-            }, 300);
+            }
+            // 모바일은 CSS의 fixed position으로 처리
         }
         
         // 화면 고정 함수 (모바일 브라우저 강제 고정) - 광고 영역 유지 - 최종 최종 최종 버전
