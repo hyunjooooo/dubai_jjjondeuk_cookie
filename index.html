@@ -5,6 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
     <meta name="google-adsense-account" content="ca-pub-7258774526539144">
     <title>두바이쫀득쿠키: 사먹자 서민들아</title>
+    <!-- 즉시 실행: 새로고침 시 화면 밀림 방지 -->
+    <script>
+        (function() {
+            'use strict';
+            // 즉시 스크롤 방지
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            if (document.body) document.body.scrollTop = 0;
+            
+            // 즉시 body와 html 고정
+            function immediateLock() {
+                const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+                if (viewportHeight > 0 && document.documentElement) {
+                    document.documentElement.style.position = 'fixed';
+                    document.documentElement.style.top = '0';
+                    document.documentElement.style.overflow = 'hidden';
+                    document.documentElement.style.height = viewportHeight + 'px';
+                    document.documentElement.style.width = '100%';
+                    document.documentElement.style.margin = '0';
+                    document.documentElement.style.padding = '0';
+                    
+                    if (document.body) {
+                        document.body.style.position = 'fixed';
+                        document.body.style.top = '0';
+                        document.body.style.overflow = 'hidden';
+                        document.body.style.height = viewportHeight + 'px';
+                        document.body.style.width = '100vw';
+                        document.body.style.margin = '0';
+                        document.body.style.padding = '0';
+                    }
+                }
+            }
+            
+            // 즉시 실행
+            immediateLock();
+            
+            // DOM이 준비되기 전에도 계속 실행
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', immediateLock);
+            }
+            
+            // 스크롤 이벤트 즉시 차단
+            window.addEventListener('scroll', function(e) {
+                e.preventDefault();
+                window.scrollTo(0, 0);
+            }, { passive: false, capture: true });
+            
+            document.addEventListener('scroll', function(e) {
+                e.preventDefault();
+                window.scrollTo(0, 0);
+            }, { passive: false, capture: true });
+        })();
+    </script>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7258774526539144"
      crossorigin="anonymous"></script>
@@ -78,10 +131,11 @@
         .time-text { font-size: 1.1rem; color: #2196f3; }
         .best-time { font-size: 0.9rem; color: #ff9800; }
         #game-container {
-            flex: 1 1 auto; /* 상단/하단 광고를 제외한 남은 공간을 강제로 꽉 채움 */
+            flex: 1 1 0%; /* 상단/하단 광고를 제외한 남은 공간을 강제로 꽉 채움 */
             position: relative;
             width: 100%;
             min-height: 0; /* flex 아이템이 축소될 수 있도록 */
+            max-height: 100%; /* 최대 높이 제한 */
             background: #222;
             display: flex;
             justify-content: center;
@@ -433,7 +487,7 @@
             // 먼저 화면 고정
             lockScreen();
             
-            // 인앱 브라우저 툴바가 자리를 잡을 수 있게 0.2초의 여유를 줍니다.
+            // 인앱 브라우저 툴바가 자리를 잡을 수 있게 0.3초의 여유를 줍니다.
             setTimeout(() => {
                 // 다시 한번 화면 고정 (주소창 변화 대응)
                 lockScreen();
@@ -441,13 +495,28 @@
                 const container = document.getElementById('game-container');
                 if (!container) return;
                 
+                // body의 실제 높이에서 고정된 요소들의 높이를 빼서 계산
+                const bodyHeight = document.body.offsetHeight || (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+                const adTop = document.querySelector('.ad-top');
+                const adBottom = document.querySelector('.ad-bottom');
+                const uiHeader = document.getElementById('ui-header');
+                
+                const adTopHeight = adTop ? adTop.offsetHeight : 50;
+                const adBottomHeight = adBottom ? adBottom.offsetHeight : 100;
+                const headerHeight = uiHeader ? uiHeader.offsetHeight : 120;
+                
                 // container의 실제 높이를 강제로 계산
                 const containerRect = container.getBoundingClientRect();
-                const containerHeight = Math.floor(containerRect.height);
+                let containerHeight = Math.floor(containerRect.height);
+                
+                // 계산된 높이가 0이거나 이상하면 직접 계산
+                if (containerHeight <= 0 || containerHeight > bodyHeight) {
+                    containerHeight = Math.max(bodyHeight - adTopHeight - adBottomHeight - headerHeight, 200);
+                }
 
                 // 중앙 게임 영역 박스의 실제 크기를 측정해서 캔버스에 입힙니다.
                 canvas.width = Math.min(container.clientWidth, 500);
-                canvas.height = containerHeight > 0 ? containerHeight : container.clientHeight;
+                canvas.height = Math.max(containerHeight, 200); // 최소 높이 보장
 
                 // 캐릭터(바구니) 위치를 바닥에서 80px 위로 재조정합니다.
                 basket.x = canvas.width / 2 - 40;
