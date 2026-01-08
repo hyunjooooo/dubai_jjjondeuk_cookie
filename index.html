@@ -14,33 +14,53 @@
             document.documentElement.scrollTop = 0;
             if (document.body) document.body.scrollTop = 0;
             
-            // 즉시 스크롤 방지 및 화면 고정 - 최종 강화 버전
+            // 즉시 스크롤 방지 및 화면 고정 - 최종 최종 버전
             function immediateLock() {
-                // visualViewport 높이 사용
+                // visualViewport 높이 사용 (가장 정확함)
                 let vh = window.innerHeight;
                 if (window.visualViewport && window.visualViewport.height) {
-                    vh = window.visualViewport.height;
+                    vh = Math.floor(window.visualViewport.height);
+                } else {
+                    vh = Math.floor(window.innerHeight);
                 }
                 
                 // 스크롤 위치 강제 고정
                 window.scrollTo(0, 0);
                 if (document.documentElement) {
                     document.documentElement.scrollTop = 0;
-                    document.documentElement.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; height: ' + vh + 'px !important; width: 100% !important; overflow: hidden !important; margin: 0 !important; padding: 0 !important; will-change: transform !important; transform: translateZ(0) !important;';
+                    document.documentElement.style.position = 'fixed';
+                    document.documentElement.style.top = '0';
+                    document.documentElement.style.left = '0';
+                    document.documentElement.style.right = '0';
+                    document.documentElement.style.bottom = '0';
+                    document.documentElement.style.height = vh + 'px';
+                    document.documentElement.style.width = '100%';
+                    document.documentElement.style.overflow = 'hidden';
+                    document.documentElement.style.margin = '0';
+                    document.documentElement.style.padding = '0';
                 }
                 if (document.body) {
                     document.body.scrollTop = 0;
-                    document.body.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; height: ' + vh + 'px !important; width: 100vw !important; overflow: hidden !important; margin: 0 !important; padding: 0 !important; will-change: transform !important; transform: translateZ(0) !important;';
+                    document.body.style.position = 'fixed';
+                    document.body.style.top = '0';
+                    document.body.style.left = '0';
+                    document.body.style.right = '0';
+                    document.body.style.bottom = '0';
+                    document.body.style.height = vh + 'px';
+                    document.body.style.width = '100vw';
+                    document.body.style.overflow = 'hidden';
+                    document.body.style.margin = '0';
+                    document.body.style.padding = '0';
                 }
             }
             
             // 즉시 실행
             immediateLock();
             
-            // 빠른 간격으로 계속 실행
+            // 매우 빠른 간격으로 계속 실행 (브라우저가 높이를 변경하기 전에 고정)
             const immediateInterval = setInterval(() => {
                 immediateLock();
-            }, 5); // 5ms마다 실행
+            }, 1); // 1ms마다 실행 (최대한 빠르게)
             
             // 영원히 실행 (정리하지 않음)
         })();
@@ -56,8 +76,6 @@
         }
         html { 
             width: 100% !important; 
-            height: 100vh !important;
-            max-height: 100vh !important;
             overflow: hidden !important; 
             margin: 0 !important;
             padding: 0 !important;
@@ -68,15 +86,12 @@
             left: 0 !important;
             right: 0 !important;
             bottom: 0 !important;
-            will-change: transform !important;
-            transform: translateZ(0) !important;
+            /* 높이는 JavaScript로만 설정 */
         }
         body {
             margin: 0 !important;
             padding: 0 !important;
             width: 100vw !important;
-            height: 100vh !important;
-            max-height: 100vh !important;
             overflow: hidden !important;
             position: fixed !important;
             top: 0 !important;
@@ -94,8 +109,7 @@
             overscroll-behavior: none !important;
             -webkit-user-select: none !important;
             user-select: none !important;
-            will-change: transform !important;
-            transform: translateZ(0) !important;
+            /* 높이는 JavaScript로만 설정 */
         }
         /* 광고 영역의 높이를 숫자로 고정 */
         .ad-top {
@@ -552,27 +566,43 @@
             }, 300);
         }
         
-        // 화면 고정 함수 (모바일 브라우저 강제 고정) - 광고 영역 유지 - 100dvh 사용
+        // 화면 고정 함수 (모바일 브라우저 강제 고정) - 광고 영역 유지 - 최종 최종 최종 버전
         function lockScreen() {
+            // visualViewport 높이 사용 (가장 정확함)
+            let vh = window.innerHeight;
+            if (window.visualViewport && window.visualViewport.height) {
+                vh = Math.floor(window.visualViewport.height);
+            } else {
+                vh = Math.floor(window.innerHeight);
+            }
+            
             // 즉시 스크롤 방지
             window.scrollTo(0, 0);
             if (document.documentElement) {
                 document.documentElement.scrollTop = 0;
-                // position: fixed 강제 적용
                 document.documentElement.style.position = 'fixed';
                 document.documentElement.style.top = '0';
                 document.documentElement.style.left = '0';
                 document.documentElement.style.right = '0';
                 document.documentElement.style.bottom = '0';
+                document.documentElement.style.height = vh + 'px';
+                document.documentElement.style.width = '100%';
+                document.documentElement.style.overflow = 'hidden';
+                document.documentElement.style.margin = '0';
+                document.documentElement.style.padding = '0';
             }
             if (document.body) {
                 document.body.scrollTop = 0;
-                // position: fixed 강제 적용
                 document.body.style.position = 'fixed';
                 document.body.style.top = '0';
                 document.body.style.left = '0';
                 document.body.style.right = '0';
                 document.body.style.bottom = '0';
+                document.body.style.height = vh + 'px';
+                document.body.style.width = '100vw';
+                document.body.style.overflow = 'hidden';
+                document.body.style.margin = '0';
+                document.body.style.padding = '0';
             }
             
             // 스크롤 위치는 항상 확인 및 강제 고정
@@ -583,7 +613,7 @@
                 if (document.documentElement) document.documentElement.scrollTop = 0;
                 if (document.body) document.body.scrollTop = 0;
             }
-            
+
             // 광고 영역은 건들지 않음 (광고 수익 유지)
         }
         
