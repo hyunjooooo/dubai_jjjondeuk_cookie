@@ -11,6 +11,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
         * { box-sizing: border-box; }
+        html { height: 100%; width: 100%; overflow: hidden; position: fixed; }
         body { text-align: center; background: #1a1a1a; font-family: 'Jua', sans-serif; margin: 0; padding: 0; height: 100%; width: 100vw; overflow: hidden; position: fixed; color: white; touch-action: none; display: flex; flex-direction: column; }
         .ad-top { background: #333; height: 50px; line-height: 50px; font-size: 11px; color: #888; flex-shrink: 0; }
         #ui-header { padding: 15px 10px; background: #222; position: relative; /* 버튼 배치의 기준점 */display: flex; flex-direction: column; align-items: center;justify-content: center;min-height: 110px; /* [최적화] 버튼이 들어갈 충분한 높이 확보 */}
@@ -347,14 +348,18 @@
         function resizeCanvas() {
             // 인앱 브라우저 상하단바 대응을 위해 0.1초 뒤에 다시 계산
             setTimeout(() => {
-                const viewportHeight = window.innerHeight; // 현재 보이는 실제 높이
+                // visualViewport API 사용 (인앱 브라우저 대응)
+                const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
                 const headerHeight = document.getElementById('ui-header').offsetHeight;
-                const adTopHeight = document.querySelector('.ad-top').offsetHeight;
-                const adBottomHeight = document.querySelector('.ad-bottom').offsetHeight;
+                const adTop = document.querySelector('.ad-top');
+                const adBottom = document.querySelector('.ad-bottom');
+                const adTopHeight = adTop ? adTop.offsetHeight : 0;
+                const adBottomHeight = adBottom ? adBottom.offsetHeight : 0;
 
                 canvas.width = Math.min(container.clientWidth, 500);
                 // 전체 높이에서 헤더와 광고 영역을 뺀 나머지만 캔버스 높이로 설정
-                canvas.height = viewportHeight - headerHeight - adTopHeight - adBottomHeight;
+                const calculatedHeight = viewportHeight - headerHeight - adTopHeight - adBottomHeight;
+                canvas.height = Math.max(calculatedHeight, 200); // 최소 높이 보장
                 
                 basket.x = canvas.width / 2 - 40;
                 basket.y = canvas.height - 90;
@@ -388,7 +393,29 @@
                 // 모바일은 CSS의 fixed position으로 처리
             }, 0);
         }
-        window.addEventListener('resize', resizeCanvas);
+        
+        // 인앱 브라우저 대응: resize 이벤트 디바운싱
+        let resizeTimeout;
+        function handleResize() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                resizeCanvas();
+            }, 150);
+        }
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                resizeCanvas();
+            }, 300);
+        });
+        // visualViewport API 이벤트 (인앱 브라우저 주소창 대응)
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', handleResize);
+            window.visualViewport.addEventListener('scroll', (e) => {
+                e.preventDefault();
+                window.scrollTo(0, 0);
+            });
+        }
         resizeCanvas();
 
         function startGame() {
@@ -644,7 +671,36 @@
         };
 
         window.addEventListener('mousemove', moveBasket);
-        window.addEventListener('touchmove', moveBasket, { passive: false });
+        window.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // 스크롤 방지
+            moveBasket(e);
+        }, { passive: false });
+        
+        // 추가 스크롤 방지
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        // 스크롤 방지 강화
+        document.addEventListener('scroll', (e) => {
+            e.preventDefault();
+            window.scrollTo(0, 0);
+        }, { passive: false });
+        
+        // wheel 이벤트로 인한 스크롤 방지
+        document.addEventListener('wheel', (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+            }
+        }, { passive: false });
 
         function gameLoop(time) {
             if (gameState === 'playing') {
