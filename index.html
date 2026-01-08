@@ -23,10 +23,13 @@
         canvas { background: #2c2c2c; display: block; }
         .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #start-screen { background-color: #1a1a1a; background-image: url('start.png'); background-size: contain; background-position: center; background-repeat: no-repeat; }
+        @media (max-width: 768px) {
+            #start-screen { background-size: cover; }
+        }
         .overlay h1 { color: #ffeb3b; font-size: 2.5rem; margin-bottom: 20px; text-shadow: 2px 2px #000; }
         .overlay p { text-shadow: 2px 2px #000; }
         .start-content { background: rgba(0, 0, 0, 0.7); padding: 30px 40px; border-radius: 20px; margin-bottom: 20px; backdrop-filter: blur(5px); }
-        .btn-main { padding: 15px 40px; font-size: 1.5rem; font-family: 'Jua'; background: #4caf50; color: white; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 0 #2e7d32; }
+        .btn-main { padding: 22px 55px; font-size: 2rem; font-family: 'Jua'; background: #4caf50; color: white; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 0 #2e7d32; }
         #hint-box { position: absolute; top: 50%; z-index: 30; pointer-events: none; }
         #hint-box img { width: 80px; height: auto; display: inline-block; vertical-align: middle; margin-right: 10px; object-fit: contain; }
         #hint-box-text { display: inline-block; vertical-align: middle; color: white; font-size: 1.4rem; line-height: 1.5; font-weight: normal; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
@@ -70,6 +73,26 @@
         
         /* 모바일 반응형 스타일 */
         @media (max-width: 768px) {
+            .start-buttons {
+                flex-direction: row !important;
+                flex-wrap: nowrap;
+            }
+            .start-buttons .btn-main {
+                flex: 1;
+                min-width: 0;
+                font-size: 1.4rem;
+                padding: 18px 25px;
+                white-space: nowrap;
+            }
+            .social-buttons {
+                flex-direction: column !important;
+                gap: 8px !important;
+            }
+            .social-buttons a,
+            .social-buttons button {
+                width: 100%;
+                max-width: 280px;
+            }
             #hint-box { 
                 display: none !important;
             }
@@ -176,28 +199,58 @@
             <h1>💸<br>두바이쫀득쿠키<br>사먹자 서민들아</h1>
             <p>폭등하는 물가를 뚫고 쿠키 10개를 쟁취하십시오.</p>
         </div>
-        <button class="btn-main" onclick="startGame()">게임 시작</button>
+        <div class="start-buttons" style="display: flex; flex-direction: column; gap: 10px; justify-content: center; align-items: center;">
+            <button class="btn-main" onclick="startGame()">게임 시작</button>
+            <button class="btn-main" style="background: #666;" onclick="showInfo()">게임 방법</button>
+        </div>
+        <div class="social-buttons" style="margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <a href="https://www.instagram.com/dubai_jjjondeuk_cookie/" target="_blank" style="padding: 8px 16px; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); color: white; border-radius: 20px; text-decoration: none; font-family: 'Jua'; font-size: 0.85rem; box-shadow: 0 2px 0 #C13584; display: inline-flex; align-items: center; gap: 6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" fill="white"/>
+                </svg>
+                인스타그램
+            </a>
+            <button class="btn-main" style="padding: 8px 16px; font-size: 0.85rem; background: #4caf50;" onclick="shareGame()">🔗 게임 공유</button>
+        </div>
     </div>
     <div id="end-screen" class="overlay" style="display: none;">
         <h1 style="color: #4caf50;">🎉 성공한 서민!</h1>
         <p>당신은 집념의 서민입니다.<br>두바이 쿠키 10개를 다 모았습니다!</p>
         <p style="font-size: 1.3rem; color: #ffeb3b; margin: 20px 0;">플레이 시간: <span id="end-time">0</span>초</p>
-        <button class="btn-main" onclick="location.reload()">다시 하기</button>
+        <div class="social-buttons" style="margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <a href="https://www.instagram.com/dubai_jjjondeuk_cookie/" target="_blank" style="padding: 8px 16px; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); color: white; border-radius: 20px; text-decoration: none; font-family: 'Jua'; font-size: 0.85rem; box-shadow: 0 2px 0 #C13584; display: inline-flex; align-items: center; gap: 6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" fill="white"/>
+                </svg>
+                인스타그램
+            </a>
+            <button class="btn-main" style="padding: 8px 16px; font-size: 0.85rem; background: #4caf50;" onclick="shareGame()">🔗 게임 공유</button>
+        </div>
+        <button class="btn-main" style="margin-top: 20px;" onclick="location.reload()">다시 하기</button>
     </div>
     <div id="info-screen" class="overlay" style="display: none;">
         <div style="padding: 20px; color: #888; font-size: 0.9rem; text-align: left; max-width: 500px; margin: 0 auto; line-height: 1.6; background: rgba(0,0,0,0.8); border-radius: 15px; max-height: 80vh; overflow-y: auto;">
             <h3 style="color: #ffeb3b; margin-top: 0;">🎮 게임 소개 및 방법</h3>
-            <p>본 게임은 급격히 상승하는 물가(두바이 쫀득 쿠키 시세)를 견디며 코인을 모아 쿠키 10개를 구매하는 생존 시뮬레이션 게임입니다.</p>
+            <p>본 게임은 급격히 상승하는 물가(두바이 쫀득 쿠키 시세)를 견디며 코인을 모아 쿠키<br>10개를 구매하는 서민들을 위한 게임입니다.</p>
             <ul>
                 <li><b>조작 방법:</b> 마우스나 터치로 캐릭터를 좌우로 이동하세요.</li>
                 <li><b>아이템:</b> 코인은 돈을 올려주며, 똥은 잔고의 30%를 차감합니다.</li>
-                <li><b>목표:</b> 시세가 더 오르기 전에 전략적으로 쿠키를 구매하여 10개를 채우세요!</li>
+                <li><b>목표:</b> 시세가 더 오르기 전에 전략적으로 두쫀쿠를 구매하여 10개를 채우세요!</li>
             </ul>
             <hr style="border: 0.5px solid #444;">
             <div style="font-size: 10px; color: #555; margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px;">
                 <p style="margin: 0;"><b>개인정보처리방침:</b> 본 사이트는 구글 애드센스를 통해 광고를 송출하며, 이를 위해 쿠키를 사용할 수 있습니다. 사용자는 브라우저 설정에서 쿠키 사용을 거부할 수 있습니다.</p>
             </div>
-            <p style="text-align: center; margin-top: 20px; margin-bottom: 0;">© 2026 최현주 (dubaijjondeukcookie). All rights reserved.</p>
+            <p style="text-align: center; margin-top: 20px; margin-bottom: 0;">© 2026 dubaijjondeukcookie. All rights reserved.</p>
+        </div>
+        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+            <a href="https://www.instagram.com/dubai_jjjondeuk_cookie/" target="_blank" style="padding: 8px 16px; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); color: white; border-radius: 20px; text-decoration: none; font-family: 'Jua'; font-size: 0.85rem; box-shadow: 0 2px 0 #C13584; display: inline-flex; align-items: center; gap: 6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" fill="white"/>
+                </svg>
+                인스타그램
+            </a>
+            <button class="btn-main" style="padding: 8px 16px; font-size: 0.85rem; background: #4caf50;" onclick="shareGame()">🔗 게임 공유</button>
         </div>
         <button class="btn-main" style="margin-top: 20px;" onclick="closeInfo()">닫기</button>
     </div>
@@ -433,6 +486,55 @@
         // 게임 방법 닫기 함수
         function closeInfo() {
             document.getElementById('info-screen').style.display = 'none';
+        }
+
+        // 게임 공유 함수
+        function shareGame() {
+            const gameUrl = 'https://dubai-jjjondeuk-cookie.vercel.app/';
+            if (navigator.share) {
+                // 모바일에서 공유 기능 사용
+                navigator.share({
+                    title: '두바이쫀득쿠키 게임',
+                    text: '두바이 쫀득 쿠키를 사먹자! 재미있는 생존 게임을 플레이해보세요!',
+                    url: gameUrl
+                }).catch(err => {
+                    console.log('공유 실패:', err);
+                    copyToClipboard(gameUrl);
+                });
+            } else {
+                // 데스크톱에서는 클립보드에 복사
+                copyToClipboard(gameUrl);
+            }
+        }
+
+        // 클립보드에 복사 함수
+        function copyToClipboard(text) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('게임 링크가 클립보드에 복사되었습니다!');
+                }).catch(err => {
+                    fallbackCopyToClipboard(text);
+                });
+            } else {
+                fallbackCopyToClipboard(text);
+            }
+        }
+
+        // 클립보드 복사 대체 방법
+        function fallbackCopyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                alert('게임 링크가 클립보드에 복사되었습니다!');
+            } catch (err) {
+                alert('링크 복사에 실패했습니다. 직접 복사해주세요: ' + text);
+            }
+            document.body.removeChild(textArea);
         }
 
         function spawnItem() {
