@@ -28,7 +28,7 @@
             margin: 0 !important;
             padding: 0 !important;
             width: 100vw !important;
-            height: 100% !important;
+            /* height는 JavaScript로 설정 - CSS에서는 제거 */
             overflow: hidden !important;
             position: fixed !important;
             top: 0 !important;
@@ -479,7 +479,7 @@
             }, 200);
         }
         
-        // 화면 고정 함수 (모바일 브라우저 강제 고정)
+        // 화면 고정 함수 (모바일 브라우저 강제 고정) - 광고 영역 유지
         function lockScreen() {
             // 즉시 스크롤 방지
             window.scrollTo(0, 0);
@@ -489,10 +489,16 @@
             // body와 html 강제 고정
             const body = document.body;
             const html = document.documentElement;
-            // 실제 보이는 화면 높이를 직접 측정 (주소창 제외)
-            const viewportHeight = window.innerHeight;
             
-            // body 높이를 실제 뷰포트 높이로 강제 설정
+            // visualViewport API가 있으면 사용, 없으면 window.innerHeight 사용
+            let viewportHeight;
+            if (window.visualViewport) {
+                viewportHeight = window.visualViewport.height;
+            } else {
+                viewportHeight = window.innerHeight;
+            }
+            
+            // 광고 영역은 그대로 두고 body 높이만 설정
             body.style.setProperty('position', 'fixed', 'important');
             body.style.setProperty('top', '0', 'important');
             body.style.setProperty('left', '0', 'important');
@@ -517,6 +523,8 @@
             html.style.setProperty('left', '0', 'important');
             html.style.setProperty('right', '0', 'important');
             html.style.setProperty('bottom', '0', 'important');
+            
+            // 광고 영역은 건들지 않음 (광고 수익 유지)
         }
         
         // 여러 이벤트에 대응하여 화면을 다시 그리게 함
