@@ -16,13 +16,28 @@
             
             // 즉시 스크롤 방지 및 화면 고정 - 모든 브라우저 호환 버전
             function immediateLock() {
+                // 실제 viewport 높이 가져오기
+                let vh = window.innerHeight;
+                if (window.visualViewport && window.visualViewport.height) {
+                    vh = window.visualViewport.height;
+                }
+                
                 // 스크롤 위치 강제 고정
                 window.scrollTo(0, 0);
                 if (document.documentElement) {
                     document.documentElement.scrollTop = 0;
+                    // 높이도 설정
+                    if (vh > 0) {
+                        document.documentElement.style.height = vh + 'px';
+                    }
                 }
                 if (document.body) {
                     document.body.scrollTop = 0;
+                    // 높이도 설정
+                    if (vh > 0) {
+                        document.body.style.height = vh + 'px';
+                        document.body.style.maxHeight = vh + 'px';
+                    }
                 }
             }
             
@@ -32,7 +47,7 @@
             // 빠른 간격으로 계속 실행
             const immediateInterval = setInterval(() => {
                 immediateLock();
-            }, 50); // 50ms마다 실행
+            }, 100); // 100ms마다 실행
             
             // 영원히 실행 (정리하지 않음)
         })();
@@ -545,13 +560,28 @@
         
         // 화면 고정 함수 (모바일 브라우저 강제 고정) - 모든 브라우저 호환 버전
         function lockScreen() {
+            // 실제 viewport 높이 가져오기
+            let vh = window.innerHeight;
+            if (window.visualViewport && window.visualViewport.height) {
+                vh = window.visualViewport.height;
+            }
+            
             // 즉시 스크롤 방지
             window.scrollTo(0, 0);
             if (document.documentElement) {
                 document.documentElement.scrollTop = 0;
+                // 높이도 설정
+                if (vh > 0) {
+                    document.documentElement.style.height = vh + 'px';
+                }
             }
             if (document.body) {
                 document.body.scrollTop = 0;
+                // 높이도 설정
+                if (vh > 0) {
+                    document.body.style.height = vh + 'px';
+                    document.body.style.maxHeight = vh + 'px';
+                }
             }
             
             // 스크롤 위치는 항상 확인 및 강제 고정
