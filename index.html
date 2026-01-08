@@ -14,36 +14,67 @@
             document.documentElement.scrollTop = 0;
             if (document.body) document.body.scrollTop = 0;
             
-            // 즉시 body와 html 고정
+            // 즉시 body와 html 고정 - 강화된 버전
             function immediateLock() {
-                const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+                // visualViewport 우선 사용, 없으면 innerHeight
+                const viewportHeight = (window.visualViewport && window.visualViewport.height) 
+                    ? Math.floor(window.visualViewport.height) 
+                    : Math.floor(window.innerHeight);
+                
                 if (viewportHeight > 0 && document.documentElement) {
-                    document.documentElement.style.position = 'fixed';
-                    document.documentElement.style.top = '0';
-                    document.documentElement.style.overflow = 'hidden';
-                    document.documentElement.style.height = viewportHeight + 'px';
-                    document.documentElement.style.width = '100%';
-                    document.documentElement.style.margin = '0';
-                    document.documentElement.style.padding = '0';
+                    // html 설정
+                    const html = document.documentElement;
+                    html.style.position = 'fixed';
+                    html.style.top = '0';
+                    html.style.left = '0';
+                    html.style.right = '0';
+                    html.style.bottom = '0';
+                    html.style.overflow = 'hidden';
+                    html.style.height = viewportHeight + 'px';
+                    html.style.width = '100%';
+                    html.style.margin = '0';
+                    html.style.padding = '0';
                     
+                    // body 설정
                     if (document.body) {
-                        document.body.style.position = 'fixed';
-                        document.body.style.top = '0';
-                        document.body.style.overflow = 'hidden';
-                        document.body.style.height = viewportHeight + 'px';
-                        document.body.style.width = '100vw';
-                        document.body.style.margin = '0';
-                        document.body.style.padding = '0';
+                        const body = document.body;
+                        body.style.position = 'fixed';
+                        body.style.top = '0';
+                        body.style.left = '0';
+                        body.style.right = '0';
+                        body.style.bottom = '0';
+                        body.style.overflow = 'hidden';
+                        body.style.height = viewportHeight + 'px';
+                        body.style.width = '100vw';
+                        body.style.margin = '0';
+                        body.style.padding = '0';
                     }
+                    
+                    // 스크롤 위치 강제 고정
+                    window.scrollTo(0, 0);
+                    if (document.documentElement) document.documentElement.scrollTop = 0;
+                    if (document.body) document.body.scrollTop = 0;
                 }
             }
             
             // 즉시 실행
             immediateLock();
             
-            // DOM이 준비되기 전에도 계속 실행
+            // 매우 빠른 간격으로 계속 실행 (브라우저가 높이를 변경하기 전에 고정)
+            const immediateInterval = setInterval(() => {
+                immediateLock();
+            }, 5); // 5ms마다 실행
+            
+            // DOM이 준비되면 정리
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', immediateLock);
+                document.addEventListener('DOMContentLoaded', () => {
+                    clearInterval(immediateInterval);
+                    immediateLock();
+                }, { once: true });
+            } else {
+                setTimeout(() => {
+                    clearInterval(immediateInterval);
+                }, 1000); // 1초 후 정리
             }
             
             // 스크롤 이벤트 즉시 차단
@@ -68,7 +99,6 @@
             -webkit-tap-highlight-color: transparent;
         }
         html { 
-            height: 100% !important; 
             width: 100% !important; 
             overflow: hidden !important; 
             position: fixed !important; 
@@ -80,6 +110,7 @@
             right: 0 !important;
             bottom: 0 !important;
             -webkit-overflow-scrolling: none !important;
+            /* 높이는 JavaScript로만 설정 */
         }
         body {
             margin: 0 !important;
@@ -102,7 +133,7 @@
             overscroll-behavior: none !important;
             -webkit-user-select: none !important;
             user-select: none !important;
-            /* 높이는 JavaScript로 동적 설정 - CSS에서는 제거 */
+            /* 높이는 JavaScript로만 설정 - CSS에서는 완전히 제거 */
         }
         /* 광고 영역의 높이를 숫자로 고정 */
         .ad-top {
@@ -559,19 +590,20 @@
             }, 300);
         }
         
-        // 화면 고정 함수 (모바일 브라우저 강제 고정) - 광고 영역 유지
+        // 화면 고정 함수 (모바일 브라우저 강제 고정) - 광고 영역 유지 - 최종 강화 버전
         let lastKnownHeight = 0;
         function lockScreen() {
             // 즉시 스크롤 방지
             window.scrollTo(0, 0);
-            document.documentElement.scrollTop = 0;
-            document.body.scrollTop = 0;
+            if (document.documentElement) document.documentElement.scrollTop = 0;
+            if (document.body) document.body.scrollTop = 0;
             
             // body와 html 강제 고정
             const body = document.body;
             const html = document.documentElement;
+            if (!body || !html) return;
             
-            // visualViewport API가 있으면 사용, 없으면 window.innerHeight 사용
+            // visualViewport API가 있으면 우선 사용, 없으면 window.innerHeight 사용
             let viewportHeight;
             if (window.visualViewport && window.visualViewport.height) {
                 viewportHeight = Math.floor(window.visualViewport.height);
@@ -579,43 +611,49 @@
                 viewportHeight = Math.floor(window.innerHeight);
             }
             
+            // 높이가 0이거나 유효하지 않으면 이전 값 사용
+            if (viewportHeight <= 0 && lastKnownHeight > 0) {
+                viewportHeight = lastKnownHeight;
+            }
+            
             // 항상 업데이트 (높이 변경 여부와 관계없이)
             if (viewportHeight > 0) {
                 lastKnownHeight = viewportHeight;
                 
-                // 광고 영역은 그대로 두고 body 높이만 설정
-                body.style.setProperty('position', 'fixed', 'important');
-                body.style.setProperty('top', '0', 'important');
-                body.style.setProperty('left', '0', 'important');
-                body.style.setProperty('right', '0', 'important');
-                body.style.setProperty('bottom', '0', 'important');
-                body.style.setProperty('width', '100vw', 'important');
-                body.style.setProperty('height', viewportHeight + 'px', 'important');
-                body.style.setProperty('min-height', viewportHeight + 'px', 'important');
-                body.style.setProperty('max-height', viewportHeight + 'px', 'important');
-                body.style.setProperty('overflow', 'hidden', 'important');
-                body.style.setProperty('margin', '0', 'important');
-                body.style.setProperty('padding', '0', 'important');
+                // html 설정 (setProperty 사용하지 않고 직접 설정 - 더 빠름)
+                html.style.position = 'fixed';
+                html.style.top = '0';
+                html.style.left = '0';
+                html.style.right = '0';
+                html.style.bottom = '0';
+                html.style.overflow = 'hidden';
+                html.style.height = viewportHeight + 'px';
+                html.style.width = '100%';
+                html.style.margin = '0';
+                html.style.padding = '0';
                 
-                // html도 동일하게 설정
-                html.style.setProperty('position', 'fixed', 'important');
-                html.style.setProperty('overflow', 'hidden', 'important');
-                html.style.setProperty('height', viewportHeight + 'px', 'important');
-                html.style.setProperty('width', '100%', 'important');
-                html.style.setProperty('margin', '0', 'important');
-                html.style.setProperty('padding', '0', 'important');
-                html.style.setProperty('top', '0', 'important');
-                html.style.setProperty('left', '0', 'important');
-                html.style.setProperty('right', '0', 'important');
-                html.style.setProperty('bottom', '0', 'important');
+                // body 설정
+                body.style.position = 'fixed';
+                body.style.top = '0';
+                body.style.left = '0';
+                body.style.right = '0';
+                body.style.bottom = '0';
+                body.style.width = '100vw';
+                body.style.height = viewportHeight + 'px';
+                body.style.minHeight = viewportHeight + 'px';
+                body.style.maxHeight = viewportHeight + 'px';
+                body.style.overflow = 'hidden';
+                body.style.margin = '0';
+                body.style.padding = '0';
             }
             
-            // 스크롤 위치는 항상 확인
+            // 스크롤 위치는 항상 확인 및 강제 고정
             if (window.scrollY !== 0 || window.pageYOffset !== 0 || 
-                document.documentElement.scrollTop !== 0 || document.body.scrollTop !== 0) {
+                (document.documentElement && document.documentElement.scrollTop !== 0) || 
+                (document.body && document.body.scrollTop !== 0)) {
                 window.scrollTo(0, 0);
-                document.documentElement.scrollTop = 0;
-                document.body.scrollTop = 0;
+                if (document.documentElement) document.documentElement.scrollTop = 0;
+                if (document.body) document.body.scrollTop = 0;
             }
             
             // 광고 영역은 건들지 않음 (광고 수익 유지)
