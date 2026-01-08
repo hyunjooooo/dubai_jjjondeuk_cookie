@@ -5,265 +5,711 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="google-adsense-account" content="ca-pub-7258774526539144">
     <title>두바이쫀득쿠키: 사먹자 서민들아</title>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7258774526539144" crossorigin="anonymous"></script>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7258774526539144"
+     crossorigin="anonymous"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        /* [핵심] 화면 고정 및 밀림 방지 */
-        html, body {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            overflow: hidden; position: fixed;
-            background: #1a1a1a; font-family: 'Jua', sans-serif;
-            color: white; touch-action: none;
+        * { box-sizing: border-box; }
+        html { height: 100%; width: 100%; overflow: hidden; position: fixed; }
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100dvh; /* dvh 단위가 아이폰 툴바 밀림을 방지합니다 */
+            overflow: hidden;
+            position: fixed; /* 전체 화면 위치를 고정합니다 */
+            display: flex;
+            flex-direction: column;
+            background: #1a1a1a;
+            text-align: center; 
+            font-family: 'Jua', sans-serif; 
+            color: white; 
+            touch-action: none; 
         }
-        body { display: flex; flex-direction: column; height: 100dvh; }
-
-        /* 광고 및 헤더 높이 고정 */
-        .ad-top { background: #333; height: 50px !important; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-        #ui-header { padding: 15px 10px; background: #222; flex-shrink: 0; height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 2px solid #444; position: relative; }
-        .ad-bottom { background: #333; height: 100px !important; flex-shrink: 0; border-top: 4px solid #444; }
-
-        /* 게임 영역 */
-        #game-container { flex-grow: 1; position: relative; width: 100%; background: #222; overflow: hidden; display: flex; justify-content: center; align-items: center; }
-        canvas { background: #2c2c2c; display: block; max-width: 100%; max-height: 100%; }
-
-        /* UI 텍스트 스타일 */
+        /* 광고 영역의 높이를 숫자로 고정 */
+        .ad-top {
+            background: #333;
+            height: 50px !important; 
+            min-height: 50px !important;
+            line-height: 50px; 
+            font-size: 11px; 
+            color: #888; 
+            flex-shrink: 0;
+        }
+        #ui-header {
+            padding: 15px 10px; 
+            background: #222; 
+            position: relative; /* 버튼 배치의 기준점 */
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0; /* 헤더가 찌그러지지 않게 방지 */
+            height: 120px; /* 헤더 높이도 고정 */
+        }
         .title { color: #ffeb3b; font-size: 1.4rem; margin-bottom: 5px; }
         .price-tag { color: #ff5252; font-size: 1.1rem; }
         .stats-text { font-size: 1.2rem; color: #4caf50; }
         .time-text { font-size: 1.1rem; color: #2196f3; }
-
-        /* 오버레이 (메인, 엔드, 정보 화면) */
-        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        #start-screen { background-image: url('start.png'); background-size: cover; background-position: center; }
-        .start-content { background: rgba(0, 0, 0, 0.7); padding: 30px; border-radius: 20px; margin-bottom: 20px; backdrop-filter: blur(5px); text-align: center; }
-        .btn-main { padding: 15px 40px; font-size: 1.5rem; font-family: 'Jua'; background: #4caf50; color: white; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 0 #2e7d32; }
-
-        /* SNS 버튼 스타일 복구 */
-        .insta-btn {
-            padding: 8px 16px; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
-            color: white; border-radius: 20px; text-decoration: none; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; margin-top: 10px;
+        .best-time { font-size: 0.9rem; color: #ff9800; }
+        #game-container {
+            flex-grow: 1; /* 남은 공간을 캔버스가 꽉 채움 */
+            position: relative;
+            width: 100%;
+            background: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-
-        /* 구매 버튼 스타일 */
-        #buy-btn-mobile { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); width: 75px; height: 75px; border-radius: 50%; border: none; background: #555; overflow: hidden; display: block; }
-        #buy-btn-mobile.active { background: #ffeb3b; box-shadow: 0 0 15px #ffeb3b; }
-        #buy-btn-mobile img { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
-        #buy-btn-mobile.active img { opacity: 1; }
-        #buy-btn-text-mobile { position: absolute; bottom: 5px; left: 0; right: 0; font-size: 0.75rem; color: white; text-shadow: 1px 1px 2px #000; font-weight: bold; text-align: center; }
-
-        #msg-pop { position: absolute; width: 100%; top: 30%; font-size: 2.2rem; display: none; text-shadow: 3px 3px #000; z-index: 20; font-weight: bold; text-align: center; }
-        #interstitial-ad { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 200; display: none; flex-direction: column; align-items: center; justify-content: center; }
-
-        @media (max-width: 768px) { #buy-btn { display: none; } }
-        @media (min-width: 769px) { 
-            #buy-btn-mobile { display: none; }
-            #buy-btn { position: absolute; top: 50%; right: 20px; transform: translateY(-50%); width: 90px; height: 90px; border-radius: 50%; border: none; background: #555; cursor: pointer; overflow: hidden; }
-            #buy-btn.active { background: #ffeb3b; }
-            #buy-btn img { width: 100%; height: 100%; object-fit: cover; }
-            #buy-btn-text { position: absolute; bottom: 8px; left: 0; right: 0; color: white; font-size: 0.9rem; font-weight: bold; }
+        canvas {
+            display: block;
+            background: #2c2c2c;
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #start-screen { background-color: #1a1a1a; background-image: url('start.png'); background-size: contain; background-position: center; background-repeat: no-repeat; }
+        @media (max-width: 768px) {
+            #start-screen { background-size: cover; }
+        }
+        .overlay h1 { color: #ffeb3b; font-size: 2.5rem; margin-bottom: 20px; text-shadow: 2px 2px #000; }
+        .overlay p { text-shadow: 2px 2px #000; }
+        .start-content { background: rgba(0, 0, 0, 0.7); padding: 30px 40px; border-radius: 20px; margin-bottom: 20px; backdrop-filter: blur(5px); }
+        .btn-main { padding: 22px 55px; font-size: 2rem; font-family: 'Jua'; background: #4caf50; color: white; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 0 #2e7d32; }
+        #hint-box { position: absolute; top: 50%; z-index: 30; pointer-events: none; }
+        #hint-box img { width: 80px; height: auto; display: inline-block; vertical-align: middle; margin-right: 10px; object-fit: contain; }
+        #hint-box-text { display: inline-block; vertical-align: middle; color: white; font-size: 1.4rem; line-height: 1.5; font-weight: normal; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
+        #hint-box-text .highlight { color: #ffeb3b; }
+        #buy-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 90px; height: 90px; border-radius: 50%; border: none; background: #555; color: #888; font-family: 'Jua'; font-size: 1.2rem; cursor: pointer; z-index: 30; box-shadow: 0 6px 0 #333; outline: none; padding: 0; overflow: hidden; transition: background 0.3s, box-shadow 0.3s; }
+        #buy-btn img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; transition: opacity 0.3s, filter 0.3s; filter: grayscale(100%); }
+        #buy-btn.active { background: #ffeb3b; box-shadow: 0 6px 0 #c4a700; }
+        #buy-btn.active img { opacity: 1; filter: grayscale(0%); }
+        #buy-btn-text { position: absolute; bottom: 5px; left: 0; right: 0; font-size: 0.9rem; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); font-weight: bold; z-index: 2; text-align: center; }
+        #buy-btn-mobile { display: none; }
+        /* 팝업 메시지 스타일 */
+        #msg-pop { position: absolute; width: 100%; top: 30%; left: 0; font-size: 2.2rem; display: none; text-shadow: 3px 3px #000; z-index: 20; font-weight: bold; pointer-events: none; }
+        /* 하단 광고 영역 확대 (수익 극대화 배치) */
+        .ad-bottom {
+            background: #333;
+            height: 100px !important; 
+            min-height: 100px !important;
+            line-height: 250px; 
+            color: #ffeb3b; 
+            font-size: 16px; 
+            flex-shrink: 0; 
+            border-top: 4px solid #444;
+        }
+        
+        /* 광고 영역도 높이를 확실히 숫자로 고정해 주세요 */
+        .ad-top { height: 50px !important; flex-shrink: 0; }
+        .ad-bottom { height: 100px !important; flex-shrink: 0; }
+        #ui-header { flex-shrink: 0; } /* 헤더가 찌그러지지 않게 방지 */
+        
+        @media (max-width: 768px) {
+            .ad-bottom {
+                height: 100px;
+                line-height: 100px;
+                font-size: 14px;
+            }
+        }
+        /* 전면 광고용 오버레이 (성공 시 노출) */
+        #interstitial-ad {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 200;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .ad-placeholder {
+            width: 300px; height: 450px; background: #444; border: 2px dashed #999;
+            display: flex; align-items: center; justify-content: center; color: #888;
+        }
+        
+        /* 모바일 반응형 스타일 */
+        @media (max-width: 768px) {
+            .start-buttons {
+                flex-direction: row !important;
+                flex-wrap: nowrap;
+            }
+            .start-buttons .btn-main {
+                flex: 1;
+                min-width: 0;
+                font-size: 1.4rem;
+                padding: 18px 25px;
+                white-space: nowrap;
+            }
+            .social-buttons {
+                flex-direction: column !important;
+                gap: 8px !important;
+            }
+            .social-buttons a,
+            .social-buttons button {
+                width: 100%;
+                max-width: 280px;
+            }
+            #hint-box { 
+                display: none !important;
+            }
+            #buy-btn { 
+                display: none !important;
+            }
+            #buy-btn-mobile { 
+                display: block !important; 
+                position: absolute;
+                top: 50%;           
+                right: 15px;        
+                transform: translateY(-50%); 
+                width: 75px;        
+                height: 75px;
+                border-radius: 50%;
+                border: none;
+                background: #555;
+                color: #888;
+                font-family: 'Jua';
+                font-size: 1.2rem;
+                cursor: pointer;
+                z-index: 50;
+                box-shadow: 0 6px 0 #333;
+                outline: none;
+                padding: 0;
+                overflow: hidden;
+                transition: background 0.3s, box-shadow 0.3s;
+            }
+            #buy-btn-mobile img { 
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                opacity: 0.6;
+                transition: opacity 0.3s, filter 0.3s;
+                filter: grayscale(100%);
+            }
+            #buy-btn-mobile.active { 
+                background: #ffeb3b;
+                box-shadow: 0 6px 0 #c4a700;
+            }
+            #buy-btn-mobile.active img { 
+                opacity: 1;
+                filter: grayscale(0%);
+            }
+            #buy-btn-text-mobile { 
+                position: absolute;
+                bottom: 5px;
+                left: 0;
+                right: 0;
+                font-size: 0.75rem;
+                color: white;
+                text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+                font-weight: bold;
+                z-index: 2;
+                text-align: center;
+            }
+            #ui-header { 
+                padding: 15px 10px;
+                align-items: center;
+            }
+            .stats-text { font-size: 1rem; }
+            .time-text { font-size: 0.9rem; }
+            .title { font-size: 1.2rem; }
+            .price-tag { font-size: 1rem; }
+            .start-content { padding: 20px 25px; }
+            .overlay h1 { font-size: 2rem; }
+        }
+        
+        @media (max-width: 480px) {
+            #buy-btn-mobile { 
+                width: 60px;
+                height: 60px;
+                top: 50%;
+                right: 8px;
+                transform: translateY(-50%);
+            }
+            #buy-btn-text-mobile { 
+                font-size: 0.65rem;
+            }
+            .stats-text { font-size: 0.9rem; }
+            .time-text { font-size: 0.8rem; }
         }
     </style>
 </head>
-<body oncontextmenu="return false;">
+<body>
     <div class="ad-top">
-        <ins class="adsbygoogle" style="display:block;width:100%;height:50px" data-ad-client="ca-pub-7258774526539144" data-ad-slot="4113884601" data-ad-format="horizontal"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        <!-- 상단_배너 -->
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-7258774526539144"
+             data-ad-slot="4113884601"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
     </div>
-
+    <div style="font-size: 0.7rem; color: #666; text-align: center; padding: 5px 0; background: #222; border-bottom: 1px solid #444;">© 2026 dubaijjondeukcookie. All rights reserved.</div>
+    <div id="start-screen" class="overlay">
+        <div class="start-content">
+            <h1>💸<br>두바이쫀득쿠키<br>사먹자 서민들아</h1>
+            <p>폭등하는 물가를 뚫고 쿠키 10개를 쟁취하십시오.</p>
+        </div>
+        <div class="start-buttons" style="display: flex; flex-direction: column; gap: 10px; justify-content: center; align-items: center;">
+            <button class="btn-main" onclick="startGame()">게임 시작</button>
+            <button class="btn-main" style="background: #666;" onclick="showInfo()">게임 방법</button>
+        </div>
+        <div class="social-buttons" style="margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <a href="https://www.instagram.com/dubai_jjjondeuk_cookie/" target="_blank" style="padding: 8px 16px; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); color: white; border-radius: 20px; text-decoration: none; font-family: 'Jua'; font-size: 0.85rem; box-shadow: 0 2px 0 #C13584; display: inline-flex; align-items: center; gap: 6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" fill="white"/>
+                </svg>
+                인스타그램
+            </a>
+            <button class="btn-main" style="padding: 8px 16px; font-size: 0.85rem; background: #4caf50;" onclick="shareGame()">🔗 게임 공유</button>
+        </div>
+    </div>
+    <div id="end-screen" class="overlay" style="display: none;">
+        <h1 style="color: #4caf50;">🎉 성공한 서민!</h1>
+        <p>당신은 집념의 서민입니다.<br>두바이 쿠키 10개를 다 모았습니다!</p>
+        <p style="font-size: 1.3rem; color: #ffeb3b; margin: 20px 0;">플레이 시간: <span id="end-time">0</span>초</p>
+        <div class="social-buttons" style="margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <a href="https://www.instagram.com/dubai_jjjondeuk_cookie/" target="_blank" style="padding: 8px 16px; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); color: white; border-radius: 20px; text-decoration: none; font-family: 'Jua'; font-size: 0.85rem; box-shadow: 0 2px 0 #C13584; display: inline-flex; align-items: center; gap: 6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" fill="white"/>
+                </svg>
+                인스타그램
+            </a>
+            <button class="btn-main" style="padding: 8px 16px; font-size: 0.85rem; background: #4caf50;" onclick="shareGame()">🔗 게임 공유</button>
+        </div>
+        <button class="btn-main" style="margin-top: 20px;" onclick="location.reload()">다시 하기</button>
+    </div>
+    <div id="info-screen" class="overlay" style="display: none;">
+        <div style="padding: 20px; color: #888; font-size: 0.9rem; text-align: left; max-width: 500px; margin: 0 auto; line-height: 1.6; background: rgba(0,0,0,0.8); border-radius: 15px; max-height: 80vh; overflow-y: auto;">
+            <h3 style="color: #ffeb3b; margin-top: 0;">🎮 게임 소개 및 방법</h3>
+            <p>본 게임은 급격히 상승하는 물가(두바이 쫀득 쿠키 시세)를 견디며 코인을 모아 쿠키<br>10개를 구매하는 서민들을 위한 게임입니다.</p>
+            <ul>
+                <li><b>조작 방법:</b> 마우스나 터치로 캐릭터를 좌우로 이동하세요.</li>
+                <li><b>아이템:</b> 코인은 돈을 올려주며, 똥은 잔고의 30%를 차감합니다.</li>
+                <li><b>목표:</b> 시세가 더 오르기 전에 전략적으로 두쫀쿠를 구매하여 10개를 채우세요!</li>
+            </ul>
+            <hr style="border: 0.5px solid #444;">
+            <div style="font-size: 10px; color: #555; margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                <p style="margin: 0;"><b>개인정보처리방침:</b> 본 사이트는 구글 애드센스를 통해 광고를 송출하며, 이를 위해 쿠키를 사용할 수 있습니다. 사용자는 브라우저 설정에서 쿠키 사용을 거부할 수 있습니다.</p>
+            </div>
+            <p style="text-align: center; margin-top: 20px; margin-bottom: 0;">© 2026 dubaijjondeukcookie. All rights reserved.</p>
+        </div>
+        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+            <a href="https://www.instagram.com/dubai_jjjondeuk_cookie/" target="_blank" style="padding: 8px 16px; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); color: white; border-radius: 20px; text-decoration: none; font-family: 'Jua'; font-size: 0.85rem; box-shadow: 0 2px 0 #C13584; display: inline-flex; align-items: center; gap: 6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" fill="white"/>
+                </svg>
+                인스타그램
+            </a>
+            <button class="btn-main" style="padding: 8px 16px; font-size: 0.85rem; background: #4caf50;" onclick="shareGame()">🔗 게임 공유</button>
+        </div>
+        <button class="btn-main" style="margin-top: 20px;" onclick="closeInfo()">닫기</button>
+    </div>
     <div id="ui-header">
-        <div class="title">💸 떡상하는 두바이쫀득쿠키</div>
+        <div class="title">💸 떡상하는 두쫀쿠</div>
         <div class="price-tag">현재 시세: <span id="current-price">4,000</span>원</div>
         <div class="stats-text">잔고: <span id="money">0</span>원 | 쿠키: <span id="inventory" style="color:#ffeb3b">0</span>개</div>
-        <div class="time-text">플레이 시간: <span id="play-time">0</span>초 | 최고 기록: <span id="best-time">-</span></div>
+        <div class="time-text">플레이 시간: <span id="play-time">0</span>초 | 최고 기록: <span id="best-time" class="best-time">-</span></div>
         <button id="buy-btn-mobile" onclick="buyCookie()">
-            <img src="dubai.png"><span id="buy-btn-text-mobile">돈 부족</span>
+            <img id="buy-dubai-img-mobile" src="dubai.png" alt="두바이">
+            <span id="buy-btn-text-mobile">돈 부족</span>
         </button>
     </div>
-
     <div id="game-container">
-        <div id="start-screen" class="overlay">
-            <div class="start-content">
-                <h1>💸<br>두바이쫀득쿠키<br>사먹자 서민들아</h1>
-                <p>폭등하는 물가를 뚫고 쿠키 10개를 쟁취하십시오.</p>
-                <a href="https://www.instagram.com/dubai_jjjondeuk_cookie/" target="_blank" class="insta-btn">📸 인스타그램 구경가기</a>
-            </div>
-            <div style="display:flex; gap:10px;">
-                <button class="btn-main" onclick="startGame()">게임 시작</button>
-                <button class="btn-main" style="background:#666;" onclick="showInfo()">게임 방법</button>
-            </div>
-            <button class="btn-main" style="margin-top:15px; background:#4A90E2; font-size:1rem; padding:10px 20px;" onclick="shareGame()">🔗 게임 링크 복사</button>
+        <div id="hint-box">
+            <span id="hint-box-text">돈을 모아 오른쪽 버튼으로<br><span class="highlight">두쫀쿠 10개</span>를 구매하세요</span>
         </div>
-
-        <div id="end-screen" class="overlay" style="display: none;">
-            <h1 style="color: #4caf50;">🎉 성공한 서민!</h1>
-            <p>두바이 쿠키 10개를 다 모았습니다!</p>
-            <p style="font-size: 1.3rem; color: #ffeb3b; margin: 20px 0;">플레이 시간: <span id="end-time">0</span>초</p>
-            <button class="btn-main" onclick="location.reload()">다시 하기</button>
-        </div>
-
-        <div id="info-screen" class="overlay" style="display: none;">
-            <div style="padding: 20px; color: #ccc; font-size: 0.9rem; text-align: left; max-width: 500px; background: rgba(0,0,0,0.9); border-radius: 15px; line-height: 1.6;">
-                <h3 style="color: #ffeb3b; margin-top: 0;">🎮 게임 방법</h3>
-                <p>급격히 상승하는 물가를 견디며 코인을 모아 쿠키 10개를 구매하세요!</p>
-                <ul>
-                    <li><b>조작:</b> 마우스나 터치로 좌우 이동</li>
-                    <li><b>아이템:</b> 코인은 돈(+500), 똥은 벌금(-30%)</li>
-                    <li><b>목표:</b> 시세가 너무 오르기 전에 10개 구매!</li>
-                </ul>
-                <hr style="border:0.5px solid #444;">
-                <p style="font-size:10px; color:#666;">본 사이트는 애드센스 광고 송출을 위해 쿠키를 사용할 수 있습니다.</p>
-                <button class="btn-main" style="width:100%; margin-top:15px;" onclick="closeInfo()">닫기</button>
-            </div>
-        </div>
-
         <div id="msg-pop"></div>
         <canvas id="gameCanvas"></canvas>
         <button id="buy-btn" onclick="buyCookie()">
-            <img src="dubai.png"><span id="buy-btn-text">돈 부족</span>
+            <img id="buy-dubai-img" src="dubai.png" alt="두바이">
+            <span id="buy-btn-text">돈 부족</span>
         </button>
     </div>
-
     <div class="ad-bottom">
-        <ins class="adsbygoogle" style="display:block;width:100%;height:100px" data-ad-client="ca-pub-7258774526539144" data-ad-slot="3832164645" data-ad-format="horizontal"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        <!-- 하단_배너 -->
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-7258774526539144"
+             data-ad-slot="3832164645"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
     </div>
-
     <div id="interstitial-ad">
-        <div style="margin-bottom: 20px; color: #ffeb3b;">▼ 전면 광고 영역</div>
-        <ins class="adsbygoogle" style="display:block;width:300px;height:250px" data-ad-client="ca-pub-7258774526539144" data-ad-slot="2800802932" data-ad-format="rectangle"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        <div style="margin-bottom: 20px; color: #ffeb3b;">▼ 전면 광고 영역 (수익 5배!)</div>
+        <!-- 전면광고 -->
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-7258774526539144"
+             data-ad-slot="2800802932"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
         <button class="btn-main" style="margin-top: 20px; background: #666;" onclick="closeAd()">광고 닫고 결과 보기</button>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        // 이미지 렌더링 품질 개선
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        const buyBtn = document.getElementById('buy-btn');
+        const msgPop = document.getElementById('msg-pop');
         const container = document.getElementById('game-container');
         
-        let gameState = 'ready', money = 0, cookiePrice = 4000, inventory = 0;
-        let items = [], lastSpawnTime = 0, gameStartTime = 0;
-        let basket = { x: 0, y: 0, w: 70, h: 70 };
+        let gameState = 'ready';
+        let money = 0, cookiePrice = 4000, inventory = 0;
+        let items = [], particles = [];
+        let basket = { x: 0, y: 0, w: 80, h: 80 };
+        let globalSpeed = 6, spawnRate = 650, lastSpawnTime = 0;
+        let gameStartTime = 0;
+        let gameTimer = null;
+        
+        // 최고 기록 불러오기
+        function loadBestTime() {
+            const bestTime = localStorage.getItem('dubaiCookieBestTime');
+            if (bestTime) {
+                document.getElementById('best-time').textContent = parseFloat(bestTime).toFixed(1) + '초';
+            }
+        }
+        
+        // 최고 기록 저장
+        function saveBestTime(time) {
+            const bestTime = localStorage.getItem('dubaiCookieBestTime');
+            if (!bestTime || parseFloat(time) < parseFloat(bestTime)) {
+                localStorage.setItem('dubaiCookieBestTime', time.toString());
+                document.getElementById('best-time').textContent = parseFloat(time).toFixed(1) + '초';
+            }
+        }
+        
+        loadBestTime();
 
+        const failMsgs = ["잔고 떡락", "무소유 실천", "기부천사", "어이쿠", "아이쿠"];
         const imgDdong = new Image(); imgDdong.src = 'ddong.png';
         const imgDubai = new Image(); imgDubai.src = 'dubai.png';
         const imgCoin = new Image(); imgCoin.src = 'coin.png';
 
         function resizeCanvas() {
+            // 인앱 브라우저 툴바가 자리를 잡을 수 있게 0.2초의 여유를 줍니다.
             setTimeout(() => {
+                const container = document.getElementById('game-container');
+                if (!container) return;
+
+                // 중앙 게임 영역 박스의 실제 크기를 측정해서 캔버스에 입힙니다.
                 canvas.width = container.clientWidth;
                 canvas.height = container.clientHeight;
-                basket.x = canvas.width / 2 - 35;
+
+                // 캐릭터(바구니) 위치를 바닥에서 80px 위로 재조정합니다.
+                basket.x = canvas.width / 2 - 40;
                 basket.y = canvas.height - 80;
-            }, 250);
+            }, 200);
         }
+        
+        // 여러 이벤트에 대응하여 화면을 다시 그리게 함
         window.addEventListener('resize', resizeCanvas);
         window.addEventListener('load', resizeCanvas);
+        window.addEventListener('orientationchange', resizeCanvas);
         resizeCanvas();
 
         function startGame() {
+            if (gameState !== 'ready') return;
             gameState = 'playing';
             document.getElementById('start-screen').style.display = 'none';
+            lastSpawnTime = performance.now();
             gameStartTime = performance.now();
-            requestAnimationFrame(gameLoop);
-            setInterval(() => {
-                if(gameState === 'playing') {
-                    cookiePrice += Math.floor(Math.random() * 150) + 150;
-                    document.getElementById('current-price').innerText = cookiePrice.toLocaleString();
-                    updateUI();
+            
+            // 타이머 시작
+            gameTimer = setInterval(() => {
+                if (gameState === 'playing') {
+                    const elapsed = (performance.now() - gameStartTime) / 1000;
+                    document.getElementById('play-time').textContent = elapsed.toFixed(1);
                 }
-            }, 1200);
+            }, 100);
+            
+            requestAnimationFrame(gameLoop);
         }
 
-        function updateUI() {
-            document.getElementById('money').innerText = money.toLocaleString();
-            document.getElementById('inventory').innerText = inventory;
-            const elapsed = (performance.now() - gameStartTime) / 1000;
-            if(gameState === 'playing') document.getElementById('play-time').textContent = elapsed.toFixed(1);
+        setInterval(() => {
+            if (gameState !== 'playing') return;
+            cookiePrice += Math.floor(Math.random() * 150) + 150;
+            document.getElementById('current-price').innerText = cookiePrice.toLocaleString();
+            updateBuyButton();
+        }, 1200);
 
-            const btns = [document.getElementById('buy-btn-mobile'), document.getElementById('buy-btn')];
-            btns.forEach(btn => {
-                if(!btn) return;
-                const txt = btn.querySelector('span');
-                if(money >= cookiePrice) { btn.classList.add('active'); if(txt) txt.innerText = "구매"; }
-                else { btn.classList.remove('active'); if(txt) txt.innerText = "돈 부족"; }
-            });
-        }
-
-        function buyCookie() {
-            if(money >= cookiePrice) {
-                money -= cookiePrice; inventory++;
-                showMsg("Flex!", "#ffeb3b");
-                updateUI();
-                if(inventory >= 10) endGame();
+        function updateBuyButton() {
+            const buyBtnText = document.getElementById('buy-btn-text');
+            const buyBtnMobile = document.getElementById('buy-btn-mobile');
+            const buyBtnTextMobile = document.getElementById('buy-btn-text-mobile');
+            
+            if (money >= cookiePrice) {
+                buyBtn.classList.add('active');
+                buyBtnText.textContent = "구매";
+                if (buyBtnMobile) {
+                    buyBtnMobile.classList.add('active');
+                    buyBtnTextMobile.textContent = "구매";
+                }
+            } else {
+                buyBtn.classList.remove('active');
+                buyBtnText.textContent = "돈 부족";
+                if (buyBtnMobile) {
+                    buyBtnMobile.classList.remove('active');
+                    buyBtnTextMobile.textContent = "돈 부족";
+                }
             }
         }
 
         function showMsg(text, color) {
-            const m = document.getElementById('msg-pop');
-            m.innerText = text; m.style.color = color; m.style.display = 'block';
-            setTimeout(() => m.style.display = 'none', 700);
+            msgPop.innerText = text;
+            msgPop.style.color = color;
+            msgPop.style.display = 'block';
+            setTimeout(() => { msgPop.style.display = 'none'; }, 700);
+        }
+
+        function createParticle(x, y, text, color) {
+            particles.push({ x, y, text, color, opacity: 1, life: 40 });
+        }
+
+        function buyCookie() {
+            if (gameState !== 'playing') return;
+            if (money >= cookiePrice) {
+                money -= cookiePrice;
+                inventory++;
+                showMsg("Flex!", "#ffeb3b");
+                updateBuyButton();
+                globalSpeed += 0.5;
+                spawnRate = Math.max(150, spawnRate - 60);
+                if (inventory >= 10) endGame();
+            }
         }
 
         function endGame() {
             gameState = 'end';
+            
+            // 타이머 정지 및 최고 기록 저장
+            if (gameTimer) {
+                clearInterval(gameTimer);
+                gameTimer = null;
+            }
+            const finalTime = (performance.now() - gameStartTime) / 1000;
+            saveBestTime(finalTime);
+            
+            // 1. 먼저 전면 광고를 보여줌
             document.getElementById('interstitial-ad').style.display = 'flex';
         }
 
+        // 광고 닫기 함수
         function closeAd() {
             document.getElementById('interstitial-ad').style.display = 'none';
-            document.getElementById('end-time').innerText = document.getElementById('play-time').innerText;
+            // 2. 그 다음 성공 화면을 보여줌
+            const finalTime = (performance.now() - gameStartTime) / 1000;
+            document.getElementById('end-time').textContent = finalTime.toFixed(1);
             document.getElementById('end-screen').style.display = 'flex';
         }
 
-        function shareGame() {
-            const url = window.location.href;
-            navigator.clipboard.writeText(url).then(() => alert("게임 링크가 복사되었습니다! 친구들에게 공유해보세요!"));
+        // 게임 방법 보기 함수
+        function showInfo() {
+            document.getElementById('info-screen').style.display = 'flex';
         }
 
-        function showInfo() { document.getElementById('info-screen').style.display = 'flex'; }
-        function closeInfo() { document.getElementById('info-screen').style.display = 'none'; }
+        // 게임 방법 닫기 함수
+        function closeInfo() {
+            document.getElementById('info-screen').style.display = 'none';
+        }
 
-        function gameLoop(time) {
-            if(gameState !== 'playing') return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // 게임 공유 함수
+        function shareGame() {
+            const gameUrl = 'https://dubai-jjjondeuk-cookie.vercel.app/';
+            if (navigator.share) {
+                // 모바일에서 공유 기능 사용
+                navigator.share({
+                    title: '두바이쫀득쿠키 게임',
+                    text: '두바이 쫀득 쿠키를 사먹자! 재미있는 생존 게임을 플레이해보세요!',
+                    url: gameUrl
+                }).catch(err => {
+                    console.log('공유 실패:', err);
+                    copyToClipboard(gameUrl);
+                });
+            } else {
+                // 데스크톱에서는 클립보드에 복사
+                copyToClipboard(gameUrl);
+            }
+        }
 
-            if(time - lastSpawnTime > 650) {
-                const r = Math.random();
-                items.push({ x: Math.random()*(canvas.width-45), y: -50, type: r<0.25?'poop':(r<0.3?'real':'coin'), speed: 6 });
+        // 클립보드에 복사 함수
+        function copyToClipboard(text) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('게임 링크가 클립보드에 복사되었습니다!');
+                }).catch(err => {
+                    fallbackCopyToClipboard(text);
+                });
+            } else {
+                fallbackCopyToClipboard(text);
+            }
+        }
+
+        // 클립보드 복사 대체 방법
+        function fallbackCopyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                alert('게임 링크가 클립보드에 복사되었습니다!');
+            } catch (err) {
+                alert('링크 복사에 실패했습니다. 직접 복사해주세요: ' + text);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function spawnItem() {
+            const rand = Math.random();
+            let type = (rand < 0.25) ? 'poop' : (rand < 0.30 ? 'real' : 'coin');
+            items.push({ x: Math.random() * (canvas.width - 50), y: -50, type: type, speed: globalSpeed + Math.random() * 2 });
+        }
+
+        function update(time) {
+            if (time - lastSpawnTime > 2000) lastSpawnTime = time;
+            if (time - lastSpawnTime > spawnRate) {
+                spawnItem();
                 lastSpawnTime = time;
             }
 
-            for(let i=items.length-1; i>=0; i--) {
-                const it = items[i]; it.y += it.speed;
-                let img = it.type === 'poop' ? imgDdong : (it.type === 'real' ? imgDubai : imgCoin);
-                if(img.complete) ctx.drawImage(img, it.x, it.y, 45, 45);
-
-                if(it.y + 40 > basket.y && it.x < basket.x + basket.w && it.x + 40 > basket.x) {
-                    if(it.type === 'coin') money += 500;
-                    else if(it.type === 'poop') money = Math.floor(money * 0.7);
-                    else inventory++;
-                    items.splice(i, 1); updateUI();
-                } else if(it.y > canvas.height) items.splice(i, 1);
+            for (let i = items.length - 1; i >= 0; i--) {
+                items[i].y += items[i].speed;
+                if (items[i].y + 40 > basket.y && items[i].x < basket.x + basket.w && items[i].x + 40 > basket.x) {
+                    if (items[i].type === 'coin') {
+                        money += 500;
+                        createParticle(items[i].x, items[i].y, "+500", "#4caf50");
+                    } else if (items[i].type === 'poop') {
+                        let loss = Math.floor(money * 0.3);
+                        money -= loss;
+                        createParticle(items[i].x, items[i].y, `-${loss}`, "#ff5252");
+                        showMsg(failMsgs[Math.floor(Math.random() * failMsgs.length)], "#ff5252");
+                    } else if (items[i].type === 'real') {
+                        inventory++;
+                        showMsg("럭키!", "#4caf50");
+                        if (inventory >= 10) endGame();
+                    }
+                    updateBuyButton();
+                    items.splice(i, 1);
+                    continue;
+                }
+                if (items[i].y > canvas.height) items.splice(i, 1);
             }
 
-            ctx.fillStyle = "#5d4037"; ctx.fillRect(basket.x, basket.y, basket.w, basket.h);
-            ctx.fillStyle = "white"; ctx.font = "14px Jua"; ctx.fillText("서민(나)", basket.x+15, basket.y+40);
-            updateUI();
-            requestAnimationFrame(gameLoop);
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].y -= 1.2;
+                particles[i].opacity -= 0.025;
+                if (particles[i].opacity <= 0) particles.splice(i, 1);
+            }
+
+            document.getElementById('money').innerText = money.toLocaleString();
+            document.getElementById('inventory').innerText = inventory;
         }
 
-        const handleMove = (e) => {
-            if(gameState !== 'playing') return;
-            const x = e.touches ? e.touches[0].clientX : e.clientX;
-            const rect = canvas.getBoundingClientRect();
-            basket.x = x - rect.left - basket.w/2;
-            if(basket.x < 0) basket.x = 0;
-            if(basket.x > canvas.width - basket.w) basket.x = canvas.width - basket.w;
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 파티클(숫자 효과) 그리기
+            particles.forEach(p => {
+                ctx.fillStyle = `rgba(${p.color === '#4caf50' ? '76,175,80' : '255,82,82'}, ${p.opacity})`;
+                ctx.font = "bold 22px Jua";
+                ctx.fillText(p.text, p.x, p.y);
+            });
+
+            ctx.fillStyle = "#5d4037";
+            ctx.fillRect(basket.x, basket.y, basket.w, basket.h);
+            ctx.fillStyle = "white"; ctx.font = "15px Jua"; ctx.fillText("서민(나)", basket.x + 18, basket.y + 45);
+
+            items.forEach(item => {
+                if (item.type === 'coin' && imgCoin.complete && imgCoin.naturalWidth > 0) {
+                    const targetHeight = 50;
+                    const aspectRatio = imgCoin.naturalWidth / imgCoin.naturalHeight;
+                    const targetWidth = targetHeight * aspectRatio;
+                    // 고품질 렌더링을 위해 스무딩 재설정
+                    ctx.save();
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.drawImage(imgCoin, item.x, item.y, targetWidth, targetHeight);
+                    ctx.restore();
+                } else if (item.type === 'poop' && imgDdong.complete && imgDdong.naturalWidth > 0) {
+                    const targetHeight = 50;
+                    const aspectRatio = imgDdong.naturalWidth / imgDdong.naturalHeight;
+                    const targetWidth = targetHeight * aspectRatio;
+                    ctx.drawImage(imgDdong, item.x, item.y, targetWidth, targetHeight);
+                } else if (item.type === 'real' && imgDubai.complete && imgDubai.naturalWidth > 0) {
+                    const targetHeight = 50;
+                    const aspectRatio = imgDubai.naturalWidth / imgDubai.naturalHeight;
+                    const targetWidth = targetHeight * aspectRatio;
+                    ctx.drawImage(imgDubai, item.x, item.y, targetWidth, targetHeight);
+                } else {
+                    ctx.font = "40px Arial";
+                    let icon = item.type === 'coin' ? "🪙" : (item.type === 'poop' ? "💩" : "🍪");
+                    ctx.fillText(icon, item.x, item.y + 35);
+                }
+            });
+        }
+
+        const moveBasket = (e) => {
+            if (gameState !== 'playing') return;
+            let clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            let rect = canvas.getBoundingClientRect();
+            basket.x = clientX - rect.left - basket.w / 2;
+            if (basket.x < 0) basket.x = 0;
+            if (basket.x > canvas.width - basket.w) basket.x = canvas.width - basket.w;
         };
-        window.addEventListener('mousemove', handleMove);
-        window.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e); }, { passive: false });
+
+        window.addEventListener('mousemove', moveBasket);
+        window.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // 스크롤 방지
+            moveBasket(e);
+        }, { passive: false });
+        
+        // 추가 스크롤 방지
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        // 스크롤 방지 강화
+        document.addEventListener('scroll', (e) => {
+            e.preventDefault();
+            window.scrollTo(0, 0);
+        }, { passive: false });
+        
+        // wheel 이벤트로 인한 스크롤 방지
+        document.addEventListener('wheel', (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        function gameLoop(time) {
+            if (gameState === 'playing') {
+                update(time);
+                draw();
+                requestAnimationFrame(gameLoop);
+            }
+        }
     </script>
 </body>
 </html>
