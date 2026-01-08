@@ -28,22 +28,24 @@
             margin: 0 !important;
             padding: 0 !important;
             width: 100vw !important;
-            /* height는 JavaScript로 동적 설정 - 100vh 제거 */
+            height: 100% !important;
             overflow: hidden !important;
-            position: fixed !important; /* 브라우저가 화면을 밀어올리지 못하게 못박음 */
+            position: fixed !important;
             top: 0 !important;
             left: 0 !important;
             right: 0 !important;
             bottom: 0 !important;
-            display: flex;
-            flex-direction: column;
+            display: flex !important;
+            flex-direction: column !important;
             background: #1a1a1a;
             text-align: center; 
             font-family: 'Jua', sans-serif; 
             color: white; 
             touch-action: none !important; 
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: none;
+            -webkit-overflow-scrolling: none !important;
+            overscroll-behavior: none !important;
+            -webkit-user-select: none !important;
+            user-select: none !important;
         }
         /* 광고 영역의 높이를 숫자로 고정 */
         .ad-top {
@@ -491,26 +493,30 @@
             const viewportHeight = window.innerHeight;
             
             // body 높이를 실제 뷰포트 높이로 강제 설정
-            body.style.position = 'fixed';
-            body.style.top = '0';
-            body.style.left = '0';
-            body.style.right = '0';
-            body.style.bottom = '0';
-            body.style.width = '100vw';
-            body.style.height = viewportHeight + 'px';
-            body.style.minHeight = viewportHeight + 'px';
-            body.style.maxHeight = viewportHeight + 'px';
-            body.style.overflow = 'hidden';
-            body.style.margin = '0';
-            body.style.padding = '0';
+            body.style.setProperty('position', 'fixed', 'important');
+            body.style.setProperty('top', '0', 'important');
+            body.style.setProperty('left', '0', 'important');
+            body.style.setProperty('right', '0', 'important');
+            body.style.setProperty('bottom', '0', 'important');
+            body.style.setProperty('width', '100vw', 'important');
+            body.style.setProperty('height', viewportHeight + 'px', 'important');
+            body.style.setProperty('min-height', viewportHeight + 'px', 'important');
+            body.style.setProperty('max-height', viewportHeight + 'px', 'important');
+            body.style.setProperty('overflow', 'hidden', 'important');
+            body.style.setProperty('margin', '0', 'important');
+            body.style.setProperty('padding', '0', 'important');
             
             // html도 동일하게 설정
-            html.style.position = 'fixed';
-            html.style.overflow = 'hidden';
-            html.style.height = viewportHeight + 'px';
-            html.style.width = '100%';
-            html.style.margin = '0';
-            html.style.padding = '0';
+            html.style.setProperty('position', 'fixed', 'important');
+            html.style.setProperty('overflow', 'hidden', 'important');
+            html.style.setProperty('height', viewportHeight + 'px', 'important');
+            html.style.setProperty('width', '100%', 'important');
+            html.style.setProperty('margin', '0', 'important');
+            html.style.setProperty('padding', '0', 'important');
+            html.style.setProperty('top', '0', 'important');
+            html.style.setProperty('left', '0', 'important');
+            html.style.setProperty('right', '0', 'important');
+            html.style.setProperty('bottom', '0', 'important');
         }
         
         // 여러 이벤트에 대응하여 화면을 다시 그리게 함
@@ -634,6 +640,14 @@
         // 추가: requestAnimationFrame으로 지속적 모니터링
         function continuousLock() {
             lockScreen();
+            // 스크롤 위치 강제 고정
+            if (window.scrollY !== 0 || window.pageYOffset !== 0 || 
+                document.documentElement.scrollTop !== 0 || document.body.scrollTop !== 0) {
+                window.scrollTo(0, 0);
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+            }
             requestAnimationFrame(continuousLock);
         }
         continuousLock();
