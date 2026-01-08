@@ -24,9 +24,7 @@
             margin: 0 !important;
             padding: 0 !important;
             width: 100vw !important;
-            height: 100vh !important;
-            min-height: 100vh !important;
-            max-height: 100vh !important;
+            /* height는 JavaScript로 동적 설정 - 100vh 제거 */
             overflow: hidden !important;
             position: fixed !important; /* 브라우저가 화면을 밀어올리지 못하게 못박음 */
             top: 0 !important;
@@ -421,8 +419,14 @@
         const imgCoin = new Image(); imgCoin.src = 'coin.png';
 
         function resizeCanvas() {
+            // 먼저 화면 고정
+            lockScreen();
+            
             // 인앱 브라우저 툴바가 자리를 잡을 수 있게 0.2초의 여유를 줍니다.
             setTimeout(() => {
+                // 다시 한번 화면 고정 (주소창 변화 대응)
+                lockScreen();
+                
                 const container = document.getElementById('game-container');
                 if (!container) return;
 
@@ -479,8 +483,10 @@
             // body와 html 강제 고정
             const body = document.body;
             const html = document.documentElement;
+            // 실제 보이는 화면 높이를 직접 측정 (주소창 제외)
             const viewportHeight = window.innerHeight;
             
+            // body 높이를 실제 뷰포트 높이로 강제 설정
             body.style.position = 'fixed';
             body.style.top = '0';
             body.style.left = '0';
@@ -488,13 +494,16 @@
             body.style.bottom = '0';
             body.style.width = '100vw';
             body.style.height = viewportHeight + 'px';
+            body.style.minHeight = viewportHeight + 'px';
+            body.style.maxHeight = viewportHeight + 'px';
             body.style.overflow = 'hidden';
             body.style.margin = '0';
             body.style.padding = '0';
             
+            // html도 동일하게 설정
             html.style.position = 'fixed';
             html.style.overflow = 'hidden';
-            html.style.height = '100%';
+            html.style.height = viewportHeight + 'px';
             html.style.width = '100%';
             html.style.margin = '0';
             html.style.padding = '0';
