@@ -138,11 +138,12 @@
         .time-text { font-size: 1.1rem; color: #2196f3; }
         .best-time { font-size: 0.9rem; color: #ff9800; }
         #game-container {
-            flex: 1 1 0%; /* 상단/하단 광고를 제외한 남은 공간을 강제로 꽉 채움 */
-            position: relative;
+            position: absolute;
+            top: 170px; /* ad-top(50px) + header(120px) */
+            left: 0;
+            right: 0;
+            bottom: 100px; /* ad-bottom(100px) */
             width: 100%;
-            min-height: 0; /* flex 아이템이 축소될 수 있도록 */
-            max-height: 100%; /* 최대 높이 제한 */
             background: #222;
             display: flex;
             justify-content: center;
@@ -494,41 +495,17 @@
             // 먼저 화면 고정
             lockScreen();
             
-            // 즉시 실행 (setTimeout 제거)
+            // 즉시 실행
             const container = document.getElementById('game-container');
             if (!container) return;
             
-            // body의 실제 높이를 가져옴
-            const bodyHeight = document.body.offsetHeight || document.body.clientHeight;
-            let viewportHeight;
-            if (window.visualViewport && window.visualViewport.height) {
-                viewportHeight = Math.floor(window.visualViewport.height);
-            } else {
-                viewportHeight = Math.floor(window.innerHeight);
-            }
-            
-            // body 높이가 제대로 설정되지 않았으면 다시 설정
-            if (bodyHeight !== viewportHeight && viewportHeight > 0) {
-                document.body.style.height = viewportHeight + 'px';
-                document.documentElement.style.height = viewportHeight + 'px';
-            }
-            
-            // 고정된 요소들의 높이 (CSS에서 이미 고정됨)
-            const adTopHeight = 50;   // .ad-top: height: 50px !important
-            const adBottomHeight = 100; // .ad-bottom: height: 100px !important
-            const headerHeight = 120;   // #ui-header: height: 120px
-            
-            // container 높이를 직접 계산: 전체 높이에서 고정 요소들을 뺌
-            const containerHeight = Math.max(viewportHeight - adTopHeight - adBottomHeight - headerHeight, 200);
-            
-            // container의 높이를 직접 설정 (flex가 제대로 작동하지 않을 경우 대비)
-            container.style.height = containerHeight + 'px';
-            container.style.minHeight = containerHeight + 'px';
-            container.style.maxHeight = containerHeight + 'px';
+            // container의 실제 높이를 가져옴 (absolute positioning으로 자동 계산됨)
+            const containerHeight = container.clientHeight;
+            const containerWidth = container.clientWidth;
 
             // 중앙 게임 영역 박스의 실제 크기를 측정해서 캔버스에 입힙니다.
-            canvas.width = Math.min(container.clientWidth, 500);
-            canvas.height = containerHeight; // 계산된 높이 사용
+            canvas.width = Math.min(containerWidth, 500);
+            canvas.height = Math.max(containerHeight, 200); // 최소 높이 보장
 
             // 캐릭터(바구니) 위치를 바닥에서 80px 위로 재조정합니다.
             basket.x = canvas.width / 2 - 40;
