@@ -14,36 +14,26 @@
             document.documentElement.scrollTop = 0;
             if (document.body) document.body.scrollTop = 0;
             
-            // 즉시 스크롤 방지 및 높이 고정
+            // 즉시 스크롤 방지 및 화면 고정
             function immediateLock() {
-                // visualViewport 우선 사용, 없으면 innerHeight
-                let viewportHeight = (window.visualViewport && window.visualViewport.height) 
-                    ? Math.floor(window.visualViewport.height) 
-                    : Math.floor(window.innerHeight);
-                
-                // 높이가 0이면 screen.height 사용
-                if (viewportHeight <= 0 && window.screen && window.screen.height) {
-                    viewportHeight = Math.floor(window.screen.height);
-                }
-                
-                if (viewportHeight > 0 && document.body) {
-                    // body 높이를 직접 설정 (100vh 대신 실제 높이 사용)
-                    document.body.style.height = viewportHeight + 'px';
-                    document.body.style.maxHeight = viewportHeight + 'px';
-                    document.body.style.minHeight = viewportHeight + 'px';
-                    
-                    // html도 설정
-                    if (document.documentElement) {
-                        document.documentElement.style.height = viewportHeight + 'px';
-                        document.documentElement.style.maxHeight = viewportHeight + 'px';
-                        document.documentElement.style.minHeight = viewportHeight + 'px';
-                    }
-                }
-                
                 // 스크롤 위치 강제 고정
                 window.scrollTo(0, 0);
-                if (document.documentElement) document.documentElement.scrollTop = 0;
-                if (document.body) document.body.scrollTop = 0;
+                if (document.documentElement) {
+                    document.documentElement.scrollTop = 0;
+                    document.documentElement.style.position = 'fixed';
+                    document.documentElement.style.top = '0';
+                    document.documentElement.style.left = '0';
+                    document.documentElement.style.right = '0';
+                    document.documentElement.style.bottom = '0';
+                }
+                if (document.body) {
+                    document.body.scrollTop = 0;
+                    document.body.style.position = 'fixed';
+                    document.body.style.top = '0';
+                    document.body.style.left = '0';
+                    document.body.style.right = '0';
+                    document.body.style.bottom = '0';
+                }
             }
             
             // 즉시 실행
@@ -52,7 +42,7 @@
             // 빠른 간격으로 계속 실행
             const immediateInterval = setInterval(() => {
                 immediateLock();
-            }, 50); // 50ms마다 실행
+            }, 10); // 10ms마다 실행
             
             // DOM이 준비되면 정리
             if (document.readyState === 'loading') {
@@ -63,7 +53,7 @@
             } else {
                 setTimeout(() => {
                     clearInterval(immediateInterval);
-                }, 3000); // 3초 후 정리
+                }, 5000); // 5초 후 정리
             }
             
             // 스크롤 이벤트 즉시 차단
@@ -89,22 +79,31 @@
         }
         html { 
             width: 100% !important; 
-            height: 100% !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
             overflow: hidden !important; 
             margin: 0 !important;
             padding: 0 !important;
             touch-action: none !important;
             -webkit-overflow-scrolling: none !important;
-            position: relative !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
         }
         body {
             margin: 0 !important;
             padding: 0 !important;
             width: 100vw !important;
-            height: 100vh !important;
-            max-height: 100vh !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
             overflow: hidden !important;
-            position: relative !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
             display: flex !important;
             flex-direction: column !important;
             background: #1a1a1a;
@@ -572,49 +571,27 @@
             }, 300);
         }
         
-        // 화면 고정 함수 (모바일 브라우저 강제 고정) - 광고 영역 유지 - 새로운 접근
-        let lastKnownHeight = 0;
+        // 화면 고정 함수 (모바일 브라우저 강제 고정) - 광고 영역 유지 - 100dvh 사용
         function lockScreen() {
             // 즉시 스크롤 방지
             window.scrollTo(0, 0);
-            if (document.documentElement) document.documentElement.scrollTop = 0;
-            if (document.body) document.body.scrollTop = 0;
-            
-            // body와 html 높이만 업데이트 (position은 CSS에서 관리)
-            const body = document.body;
-            const html = document.documentElement;
-            if (!body || !html) return;
-            
-            // visualViewport API가 있으면 우선 사용, 없으면 window.innerHeight 사용
-            let viewportHeight;
-            if (window.visualViewport && window.visualViewport.height) {
-                viewportHeight = Math.floor(window.visualViewport.height);
-            } else {
-                viewportHeight = Math.floor(window.innerHeight);
+            if (document.documentElement) {
+                document.documentElement.scrollTop = 0;
+                // position: fixed 강제 적용
+                document.documentElement.style.position = 'fixed';
+                document.documentElement.style.top = '0';
+                document.documentElement.style.left = '0';
+                document.documentElement.style.right = '0';
+                document.documentElement.style.bottom = '0';
             }
-            
-            // 높이가 0이거나 유효하지 않으면 이전 값 또는 screen.height 사용
-            if (viewportHeight <= 0) {
-                if (lastKnownHeight > 0) {
-                    viewportHeight = lastKnownHeight;
-                } else if (window.screen && window.screen.height) {
-                    viewportHeight = Math.floor(window.screen.height);
-                }
-            }
-            
-            // 항상 업데이트 (높이만 설정, position은 CSS에서 관리)
-            if (viewportHeight > 0) {
-                lastKnownHeight = viewportHeight;
-                
-                // html 높이만 설정
-                html.style.height = viewportHeight + 'px';
-                html.style.maxHeight = viewportHeight + 'px';
-                html.style.minHeight = viewportHeight + 'px';
-                
-                // body 높이만 설정
-                body.style.height = viewportHeight + 'px';
-                body.style.minHeight = viewportHeight + 'px';
-                body.style.maxHeight = viewportHeight + 'px';
+            if (document.body) {
+                document.body.scrollTop = 0;
+                // position: fixed 강제 적용
+                document.body.style.position = 'fixed';
+                document.body.style.top = '0';
+                document.body.style.left = '0';
+                document.body.style.right = '0';
+                document.body.style.bottom = '0';
             }
             
             // 스크롤 위치는 항상 확인 및 강제 고정
