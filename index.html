@@ -9,7 +9,7 @@
         * { box-sizing: border-box; }
         body { text-align: center; background: #1a1a1a; font-family: 'Jua', sans-serif; margin: 0; padding: 0; overflow: hidden; color: white; touch-action: none; display: flex; flex-direction: column; height: 100vh; }
         .ad-top { background: #333; height: 50px; line-height: 50px; font-size: 11px; color: #888; flex-shrink: 0; }
-        #ui-header { padding: 15px 10px; background: #222; flex-shrink: 0; border-bottom: 2px solid #444; }
+        #ui-header { padding: 15px 10px; background: #222; position: relative; /* 버튼 배치의 기준점 */display: flex; flex-direction: column; align-items: center;justify-content: center;min-height: 110px; /* [최적화] 버튼이 들어갈 충분한 높이 확보 */}
         .title { color: #ffeb3b; font-size: 1.4rem; margin-bottom: 5px; }
         .price-tag { color: #ff5252; font-size: 1.1rem; }
         .stats-text { font-size: 1.2rem; color: #4caf50; }
@@ -32,6 +32,7 @@
         #buy-btn.active { background: #ffeb3b; box-shadow: 0 6px 0 #c4a700; }
         #buy-btn.active img { opacity: 1; filter: grayscale(0%); }
         #buy-btn-text { position: absolute; bottom: 5px; left: 0; right: 0; font-size: 0.9rem; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); font-weight: bold; z-index: 2; text-align: center; }
+        #buy-btn-mobile { display: none; }
         /* 팝업 메시지 스타일 */
         #msg-pop { position: absolute; width: 100%; top: 30%; left: 0; font-size: 2.2rem; display: none; text-shadow: 3px 3px #000; z-index: 20; font-weight: bold; pointer-events: none; }
         /* 하단 광고 영역 확대 (수익 극대화 배치) */
@@ -53,6 +54,93 @@
         .ad-placeholder {
             width: 300px; height: 450px; background: #444; border: 2px dashed #999;
             display: flex; align-items: center; justify-content: center; color: #888;
+        }
+        
+        /* 모바일 반응형 스타일 */
+        @media (max-width: 768px) {
+            #hint-box { 
+                display: none !important;
+            }
+            #buy-btn { 
+                display: none !important;
+            }
+            #buy-btn-mobile { 
+                display: block !important; 
+                position: absolute;
+                top: 50%;           
+                right: 15px;        
+                transform: translateY(-50%); 
+                width: 75px;        
+                height: 75px;
+                border-radius: 50%;
+                border: none;
+                background: #555;
+                color: #888;
+                font-family: 'Jua';
+                font-size: 1.2rem;
+                cursor: pointer;
+                z-index: 50;
+                box-shadow: 0 6px 0 #333;
+                outline: none;
+                padding: 0;
+                overflow: hidden;
+                transition: background 0.3s, box-shadow 0.3s;
+            }
+            #buy-btn-mobile img { 
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                opacity: 0.6;
+                transition: opacity 0.3s, filter 0.3s;
+                filter: grayscale(100%);
+            }
+            #buy-btn-mobile.active { 
+                background: #ffeb3b;
+                box-shadow: 0 6px 0 #c4a700;
+            }
+            #buy-btn-mobile.active img { 
+                opacity: 1;
+                filter: grayscale(0%);
+            }
+            #buy-btn-text-mobile { 
+                position: absolute;
+                bottom: 5px;
+                left: 0;
+                right: 0;
+                font-size: 0.75rem;
+                color: white;
+                text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+                font-weight: bold;
+                z-index: 2;
+                text-align: center;
+            }
+            #ui-header { 
+                padding: 15px 10px;
+                align-items: center;
+            }
+            .stats-text { font-size: 1rem; }
+            .time-text { font-size: 0.9rem; }
+            .title { font-size: 1.2rem; }
+            .price-tag { font-size: 1rem; }
+            .start-content { padding: 20px 25px; }
+            .overlay h1 { font-size: 2rem; }
+        }
+        
+        @media (max-width: 480px) {
+            #buy-btn-mobile { 
+                width: 60px;
+                height: 60px;
+                top: 8px;
+                right: 8px;
+            }
+            #buy-btn-text-mobile { 
+                font-size: 0.65rem;
+            }
+            .stats-text { font-size: 0.9rem; }
+            .time-text { font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -76,6 +164,10 @@
         <div class="price-tag">현재 시세: <span id="current-price">4,000</span>원</div>
         <div class="stats-text">잔고: <span id="money">0</span>원 | 쿠키: <span id="inventory" style="color:#ffeb3b">0</span>개</div>
         <div class="time-text">플레이 시간: <span id="play-time">0</span>초 | 최고 기록: <span id="best-time" class="best-time">-</span></div>
+        <button id="buy-btn-mobile" onclick="buyCookie()">
+            <img id="buy-dubai-img-mobile" src="dubai.png" alt="두바이">
+            <span id="buy-btn-text-mobile">돈 부족</span>
+        </button>
     </div>
     <div id="game-container">
         <div id="hint-box">
@@ -160,10 +252,17 @@
                 hintBox.style.transform = 'translateX(-100%) translateY(-50%)';
                 hintBox.style.textAlign = 'right';
                 
-                // 구매 버튼을 canvas 오른쪽 밖에 배치
-                const btnLeft = canvasRightInContainer + spacing;
-                buyBtn.style.left = btnLeft + 'px';
-                buyBtn.style.right = 'auto';
+                // 구매 버튼을 canvas 오른쪽 밖에 배치 (데스크톱만)
+                if (window.innerWidth > 768) {
+                    const btnLeft = canvasRightInContainer + spacing;
+                    buyBtn.style.left = btnLeft + 'px';
+                    buyBtn.style.right = 'auto';
+                    buyBtn.style.position = 'absolute';
+                    buyBtn.style.bottom = 'auto';
+                    buyBtn.style.top = '50%';
+                    buyBtn.style.transform = 'translateY(-50%)';
+                }
+                // 모바일은 CSS의 fixed position으로 처리
             }, 0);
         }
         window.addEventListener('resize', resizeCanvas);
@@ -196,12 +295,23 @@
 
         function updateBuyButton() {
             const buyBtnText = document.getElementById('buy-btn-text');
+            const buyBtnMobile = document.getElementById('buy-btn-mobile');
+            const buyBtnTextMobile = document.getElementById('buy-btn-text-mobile');
+            
             if (money >= cookiePrice) {
                 buyBtn.classList.add('active');
                 buyBtnText.textContent = "구매";
+                if (buyBtnMobile) {
+                    buyBtnMobile.classList.add('active');
+                    buyBtnTextMobile.textContent = "구매";
+                }
             } else {
                 buyBtn.classList.remove('active');
                 buyBtnText.textContent = "돈 부족";
+                if (buyBtnMobile) {
+                    buyBtnMobile.classList.remove('active');
+                    buyBtnTextMobile.textContent = "돈 부족";
+                }
             }
         }
 
