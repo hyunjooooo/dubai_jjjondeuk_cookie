@@ -13,7 +13,7 @@
             window.scrollTo(0, 0);
             document.documentElement.scrollTop = 0;
             if (document.body) document.body.scrollTop = 0;
-
+            
             // 즉시 스크롤 방지 및 화면 고정 - 최종 최종 버전
             function immediateLock() {
                 // visualViewport 높이 사용 (가장 정확함)
@@ -23,7 +23,7 @@
                 } else {
                     vh = Math.floor(window.innerHeight);
                 }
-
+                
                 // 스크롤 위치 강제 고정
                 window.scrollTo(0, 0);
                 if (document.documentElement) {
@@ -53,15 +53,15 @@
                     document.body.style.padding = '0';
                 }
             }
-
+            
             // 즉시 실행
             immediateLock();
-
+            
             // 매우 빠른 간격으로 계속 실행 (브라우저가 높이를 변경하기 전에 고정)
             const immediateInterval = setInterval(() => {
                 immediateLock();
             }, 1); // 1ms마다 실행 (최대한 빠르게)
-
+            
             // 영원히 실행 (정리하지 않음)
         })();
     </script>
@@ -140,11 +140,6 @@
         #game-container {
             flex: 1 1 0%; /* 상단/하단 광고를 제외한 남은 공간을 강제로 꽉 채움 */
             position: relative;
-            position: absolute;
-            top: 170px; /* ad-top(50px) + header(120px) */
-            left: 0;
-            right: 0;
-            bottom: 100px; /* ad-bottom(100px) */
             width: 100%;
             min-height: 0; /* flex 아이템이 축소될 수 있도록 */
             max-height: 100%; /* 최대 높이 제한 */
@@ -174,7 +169,7 @@
         #hint-box img { width: 80px; height: auto; display: inline-block; vertical-align: middle; margin-right: 10px; object-fit: contain; }
         #hint-box-text { display: inline-block; vertical-align: middle; color: white; font-size: 1.4rem; line-height: 1.5; font-weight: normal; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
         #hint-box-text .highlight { color: #ffeb3b; }
-        #buy-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 90px; height: 90px; border-radius: 50%; border: none; background: #555; color: #888; font-family: 'Jua'; font-size: 1.2rem; cursor: pointer; z-index: 30; box-shadow: 0 6px 0 #333; outline: none; padding: 0; overflow: hidden; transition: background 0.3s, box-shadow 0.3s; }
+        #buy-btn { position: absolute; width: 90px; height: 90px; border-radius: 50%; border: none; background: #555; color: #888; font-family: 'Jua'; font-size: 1.2rem; cursor: pointer; z-index: 30; box-shadow: 0 6px 0 #333; outline: none; padding: 0; overflow: hidden; transition: background 0.3s, box-shadow 0.3s; }
         #buy-btn img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; transition: opacity 0.3s, filter 0.3s; filter: grayscale(100%); }
         #buy-btn.active { background: #ffeb3b; box-shadow: 0 6px 0 #c4a700; }
         #buy-btn.active img { opacity: 1; filter: grayscale(0%); }
@@ -190,15 +185,19 @@
             line-height: 250px; 
             color: #ffeb3b; 
             font-size: 16px; 
-            flex-shrink: 0; 
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
             border-top: 4px solid #444;
+            z-index: 20;
         }
-
+        
         /* 광고 영역도 높이를 확실히 숫자로 고정해 주세요 */
         .ad-top { height: 50px !important; flex-shrink: 0; }
         .ad-bottom { height: 100px !important; flex-shrink: 0; }
         #ui-header { flex-shrink: 0; } /* 헤더가 찌그러지지 않게 방지 */
-
+        
         @media (max-width: 768px) {
             .ad-bottom {
                 height: 100px;
@@ -216,7 +215,7 @@
             width: 300px; height: 450px; background: #444; border: 2px dashed #999;
             display: flex; align-items: center; justify-content: center; color: #888;
         }
-
+        
         /* 모바일 반응형 스타일 */
         @media (max-width: 768px) {
             .start-buttons {
@@ -247,7 +246,7 @@
             }
             #buy-btn-mobile { 
                 display: block !important; 
-                position: absolute;
+                position: fixed;
                 top: 50%;           
                 right: 15px;        
                 transform: translateY(-50%); 
@@ -309,7 +308,7 @@
             .start-content { padding: 20px 25px; }
             .overlay h1 { font-size: 2rem; }
         }
-
+        
         @media (max-width: 480px) {
             #buy-btn-mobile { 
                 width: 60px;
@@ -456,7 +455,7 @@
         const buyBtn = document.getElementById('buy-btn');
         const msgPop = document.getElementById('msg-pop');
         const container = document.getElementById('game-container');
-
+        
         let gameState = 'ready';
         let money = 0, cookiePrice = 4000, inventory = 0;
         let items = [], particles = [];
@@ -464,7 +463,7 @@
         let globalSpeed = 6, spawnRate = 650, lastSpawnTime = 0;
         let gameStartTime = 0;
         let gameTimer = null;
-
+        
         // 최고 기록 불러오기
         function loadBestTime() {
             const bestTime = localStorage.getItem('dubaiCookieBestTime');
@@ -472,7 +471,7 @@
                 document.getElementById('best-time').textContent = parseFloat(bestTime).toFixed(1) + '초';
             }
         }
-
+        
         // 최고 기록 저장
         function saveBestTime(time) {
             const bestTime = localStorage.getItem('dubaiCookieBestTime');
@@ -487,7 +486,7 @@
             }
             return false; // 기록 갱신 안 됨
         }
-
+        
         loadBestTime();
 
         const failMsgs = ["잔고 떡락", "무소유 실천", "기부천사", "어이쿠", "아이쿠"];
@@ -498,87 +497,79 @@
         function resizeCanvas() {
             // 먼저 화면 고정
             lockScreen();
-
-            // 즉시 실행 (setTimeout 제거)
-            // 즉시 실행
-            const container = document.getElementById('game-container');
-            if (!container) return;
-
-            // body의 실제 높이를 가져옴
-            const bodyHeight = document.body.offsetHeight || document.body.clientHeight;
-            let viewportHeight;
-            if (window.visualViewport && window.visualViewport.height) {
-                viewportHeight = Math.floor(window.visualViewport.height);
-            } else {
-                viewportHeight = Math.floor(window.innerHeight);
-            }
             
-            // body 높이가 제대로 설정되지 않았으면 다시 설정
-            if (bodyHeight !== viewportHeight && viewportHeight > 0) {
-                document.body.style.height = viewportHeight + 'px';
-                document.documentElement.style.height = viewportHeight + 'px';
-            }
-            
-            // 고정된 요소들의 높이 (CSS에서 이미 고정됨)
-            const adTopHeight = 50;   // .ad-top: height: 50px !important
-            const adBottomHeight = 100; // .ad-bottom: height: 100px !important
-            const headerHeight = 120;   // #ui-header: height: 120px
-            
-            // container 높이를 직접 계산: 전체 높이에서 고정 요소들을 뺌
-            const containerHeight = Math.max(viewportHeight - adTopHeight - adBottomHeight - headerHeight, 200);
-            
-            // container의 높이를 직접 설정 (flex가 제대로 작동하지 않을 경우 대비)
-            container.style.height = containerHeight + 'px';
-            container.style.minHeight = containerHeight + 'px';
-            container.style.maxHeight = containerHeight + 'px';
-            // container의 실제 높이를 가져옴 (absolute positioning으로 자동 계산됨)
-            const containerHeight = container.clientHeight;
-            const containerWidth = container.clientWidth;
-
-            // 중앙 게임 영역 박스의 실제 크기를 측정해서 캔버스에 입힙니다.
-            canvas.width = Math.min(container.clientWidth, 500);
-            canvas.height = containerHeight; // 계산된 높이 사용
-            canvas.width = Math.min(containerWidth, 500);
-            canvas.height = Math.max(containerHeight, 200); // 최소 높이 보장
-
-            // 캐릭터(바구니) 위치를 바닥에서 80px 위로 재조정합니다.
-            basket.x = canvas.width / 2 - 40;
-            basket.y = canvas.height - 80;
-
-            // canvas의 실제 위치를 getBoundingClientRect로 정확히 계산
-            const containerRect = container.getBoundingClientRect();
-            const canvasRect = canvas.getBoundingClientRect();
-            const spacing = 20; // canvas와 좌우 요소 사이의 간격
-
-            // canvas의 왼쪽 끝 위치 (container 기준)
-            const canvasLeftInContainer = canvasRect.left - containerRect.left;
-            // canvas의 오른쪽 끝 위치 (container 기준)
-            const canvasRightInContainer = canvasRect.right - containerRect.left;
-
-            // 힌트 박스를 canvas 왼쪽 밖에 배치
-            const hintBox = document.getElementById('hint-box');
-            if (hintBox) {
-                hintBox.style.left = (canvasLeftInContainer - spacing) + 'px';
-                hintBox.style.transform = 'translateX(-100%) translateY(-50%)';
-                hintBox.style.textAlign = 'right';
-            }
-
-            // 구매 버튼을 canvas 오른쪽 밖에 배치 (데스크톱만)
-            if (window.innerWidth > 768) {
-                const buyBtn = document.getElementById('buy-btn');
-                if (buyBtn) {
-                    const btnLeft = canvasRightInContainer + spacing;
-                    buyBtn.style.left = btnLeft + 'px';
-                    buyBtn.style.right = 'auto';
-                    buyBtn.style.position = 'absolute';
-                    buyBtn.style.bottom = 'auto';
-                    buyBtn.style.top = '50%';
-                    buyBtn.style.transform = 'translateY(-50%)';
+            // 인앱 브라우저 툴바가 자리를 잡을 수 있게 짧은 대기 후 실행
+            setTimeout(() => {
+                // 다시 한번 화면 고정 (주소창 변화 대응)
+                lockScreen();
+                
+                const container = document.getElementById('game-container');
+                if (!container) return;
+                
+                // window.innerHeight를 직접 사용하여 정확한 높이 계산
+                let viewportHeight;
+                if (window.visualViewport && window.visualViewport.height) {
+                    viewportHeight = Math.floor(window.visualViewport.height);
+                } else {
+                    viewportHeight = Math.floor(window.innerHeight);
                 }
-            }
-            // 모바일은 CSS의 fixed position으로 처리
-        }
+                
+                // 고정된 요소들의 높이 (CSS에서 이미 고정됨)
+                const adTopHeight = 50;   // .ad-top: height: 50px !important
+                const adBottomHeight = 100; // .ad-bottom: height: 100px !important
+                const headerHeight = 120;   // #ui-header: height: 120px
+                
+                // container 높이를 직접 계산: 전체 높이에서 고정 요소들을 뺌
+                const containerHeight = Math.max(viewportHeight - adTopHeight - adBottomHeight - headerHeight, 200);
+                
+                // container의 높이를 직접 설정 (flex가 제대로 작동하지 않을 경우 대비)
+                container.style.height = containerHeight + 'px';
+                container.style.minHeight = containerHeight + 'px';
+                container.style.maxHeight = containerHeight + 'px';
 
+                // 중앙 게임 영역 박스의 실제 크기를 측정해서 캔버스에 입힙니다.
+                canvas.width = Math.min(container.clientWidth, 500);
+                canvas.height = containerHeight; // 계산된 높이 사용
+
+                // 캐릭터(바구니) 위치를 바닥에서 80px 위로 재조정합니다.
+                basket.x = canvas.width / 2 - 40;
+                basket.y = canvas.height - 80;
+                
+                // canvas의 실제 위치를 getBoundingClientRect로 정확히 계산
+                const containerRect = container.getBoundingClientRect();
+                const canvasRect = canvas.getBoundingClientRect();
+                const spacing = 20; // canvas와 좌우 요소 사이의 간격
+                
+                // canvas의 왼쪽 끝 위치 (container 기준)
+                const canvasLeftInContainer = canvasRect.left - containerRect.left;
+                // canvas의 오른쪽 끝 위치 (container 기준)
+                const canvasRightInContainer = canvasRect.right - containerRect.left;
+                
+                // 힌트 박스를 canvas 왼쪽 밖에 배치
+                const hintBox = document.getElementById('hint-box');
+                if (hintBox) {
+                    hintBox.style.left = (canvasLeftInContainer - spacing) + 'px';
+                    hintBox.style.transform = 'translateX(-100%) translateY(-50%)';
+                    hintBox.style.textAlign = 'right';
+                }
+                
+                // 구매 버튼을 canvas 오른쪽 밖에 배치 (데스크톱만)
+                if (window.innerWidth > 768) {
+                    const buyBtn = document.getElementById('buy-btn');
+                    if (buyBtn) {
+                        const btnLeft = canvasRightInContainer + spacing;
+                        buyBtn.style.left = btnLeft + 'px';
+                        buyBtn.style.right = 'auto';
+                        buyBtn.style.position = 'absolute';
+                        buyBtn.style.bottom = 'auto';
+                        buyBtn.style.top = '50%';
+                        buyBtn.style.transform = 'translateY(-50%)';
+                    }
+                }
+                // 모바일은 CSS의 fixed position으로 처리
+            }, 100);
+        }
+        
         // 화면 고정 함수 (모바일 브라우저 강제 고정) - 광고 영역 유지 - 최종 최종 최종 버전
         function lockScreen() {
             // visualViewport 높이 사용 (가장 정확함)
@@ -588,7 +579,7 @@
             } else {
                 vh = Math.floor(window.innerHeight);
             }
-
+            
             // 즉시 스크롤 방지
             window.scrollTo(0, 0);
             if (document.documentElement) {
@@ -617,7 +608,7 @@
                 document.body.style.margin = '0';
                 document.body.style.padding = '0';
             }
-
+            
             // 스크롤 위치는 항상 확인 및 강제 고정
             if (window.scrollY !== 0 || window.pageYOffset !== 0 || 
                 (document.documentElement && document.documentElement.scrollTop !== 0) || 
@@ -629,17 +620,17 @@
 
             // 광고 영역은 건들지 않음 (광고 수익 유지)
         }
-
+        
         // 여러 이벤트에 대응하여 화면을 다시 그리게 함
         function handleResize() {
             lockScreen();
             resizeCanvas();
         }
-
+        
         // 지속적으로 화면 고정 유지 (모바일 브라우저 주소창 대응)
         let lockInterval = null;
         let isInitialized = false;
-
+        
         function startLocking() {
             // 중복 실행 방지
             if (lockInterval) {
@@ -657,16 +648,16 @@
                 }
             }, 10); // 10ms마다 확인 (매우 빠른 반응)
         }
-
+        
         // 초기화 함수 (한 번만 실행)
         function initializeScreenLock() {
             if (isInitialized) return;
             isInitialized = true;
-
+            
             // 즉시 실행
             lockScreen();
             startLocking();
-
+            
             // 초기 로드 시 (한 번만 실행)
             const loadHandler = () => {
                 lockScreen();
@@ -677,7 +668,7 @@
             } else {
                 window.addEventListener('load', loadHandler, { once: true });
             }
-
+            
             // DOMContentLoaded에서도 실행 (한 번만 실행)
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => {
@@ -687,10 +678,10 @@
                 lockScreen();
             }
         }
-
+        
         // 즉시 초기화 실행
         initializeScreenLock();
-
+        
         // 페이지 언로드 시 정리
         window.addEventListener('beforeunload', () => {
             lockScreen();
@@ -704,13 +695,13 @@
             }
             isInitialized = false;
         }, { once: true });
-
+        
         // 리사이즈 이벤트
         window.addEventListener('resize', () => {
             lockScreen();
             handleResize();
         });
-
+        
         // 화면 회전
         window.addEventListener('orientationchange', () => {
             setTimeout(() => {
@@ -718,36 +709,34 @@
                 handleResize();
             }, 300);
         });
-
+        
         // 스크롤 방지 강화
         window.addEventListener('scroll', (e) => {
             e.preventDefault();
             window.scrollTo(0, 0);
             lockScreen();
         }, { passive: false });
-
+        
         document.addEventListener('scroll', (e) => {
             e.preventDefault();
             window.scrollTo(0, 0);
             lockScreen();
         }, { passive: false });
-
-        // touchmove로 인한 스크롤 방지 - 강화
+        
+        // touchmove로 인한 스크롤 방지 - 게임 조작 허용
         document.addEventListener('touchmove', (e) => {
             const target = e.target;
-            // canvas나 특정 요소가 아닌 경우 스크롤 방지
+            // canvas나 게임 영역, 버튼, 링크는 허용
             if (target.tagName === 'CANVAS' || target.closest('#game-container') || 
                 target.closest('button') || target.closest('a')) {
-                // 게임 영역, 버튼, 링크는 허용
                 return;
             }
-            // 그 외의 경우 스크롤 완전 차단
+            // 그 외의 경우 스크롤 차단
             e.preventDefault();
-            e.stopPropagation();
             window.scrollTo(0, 0);
-        }, { passive: false, capture: true });
-
-        // touchstart도 차단 (스크롤 시작 자체를 막음)
+        }, { passive: false, capture: false }); // capture를 false로 변경하여 게임 이벤트가 먼저 처리되도록
+        
+        // touchstart도 차단 (스크롤 시작 자체를 막음) - 게임 조작 허용
         document.addEventListener('touchstart', (e) => {
             const target = e.target;
             if (target.tagName === 'CANVAS' || target.closest('#game-container') || 
@@ -758,13 +747,13 @@
             if (window.scrollY !== 0 || window.pageYOffset !== 0) {
                 window.scrollTo(0, 0);
             }
-        }, { passive: false, capture: true });
-
+        }, { passive: false, capture: false }); // capture를 false로 변경
+        
         // wheel 이벤트로 인한 스크롤 방지
         document.addEventListener('wheel', (e) => {
             e.preventDefault();
         }, { passive: false });
-
+        
         // visualViewport API 사용 (모바일 브라우저 주소창 대응) - 강화된 버전
         if (window.visualViewport) {
             // resize 이벤트: 높이 변화를 실시간으로 감지
@@ -775,7 +764,7 @@
                     handleResize();
                 }, 50);
             }, { passive: true });
-
+            
             // scroll 이벤트: 스크롤 완전 차단
             window.visualViewport.addEventListener('scroll', (e) => {
                 e.preventDefault();
@@ -786,17 +775,17 @@
                 lockScreen();
             }, { passive: false });
         }
-
+        
         // requestAnimationFrame으로 지속적으로 화면 고정 (가장 확실한 방법)
         let rafId = null;
         function continuousLock() {
             lockScreen();
             rafId = requestAnimationFrame(continuousLock);
         }
-
+        
         // continuousLock 시작 (한 번만)
         continuousLock();
-
+        
         // 초기 실행
         lockScreen();
         resizeCanvas();
@@ -807,7 +796,7 @@
             document.getElementById('start-screen').style.display = 'none';
             lastSpawnTime = performance.now();
             gameStartTime = performance.now();
-
+            
             // 타이머 시작
             gameTimer = setInterval(() => {
                 if (gameState === 'playing') {
@@ -815,7 +804,7 @@
                     document.getElementById('play-time').textContent = elapsed.toFixed(1);
                 }
             }, 100);
-
+            
             requestAnimationFrame(gameLoop);
         }
 
@@ -830,7 +819,7 @@
             const buyBtnText = document.getElementById('buy-btn-text');
             const buyBtnMobile = document.getElementById('buy-btn-mobile');
             const buyBtnTextMobile = document.getElementById('buy-btn-text-mobile');
-
+            
             if (money >= cookiePrice) {
                 buyBtn.classList.add('active');
                 buyBtnText.textContent = "구매";
@@ -874,20 +863,20 @@
 
         function endGame() {
             gameState = 'end';
-
+            
             // 타이머 정지 및 최고 기록 저장
             if (gameTimer) {
                 clearInterval(gameTimer);
                 gameTimer = null;
             }
             const finalTime = (performance.now() - gameStartTime) / 1000;
-
+            
             // 엔딩 화면에 시간 표시
             const endTimeElement = document.getElementById('end-time');
             if (endTimeElement) {
                 endTimeElement.textContent = finalTime.toFixed(1);
             }
-
+            
             // 최고 기록 저장 및 갱신
             const isNewRecord = saveBestTime(finalTime);
             if (isNewRecord) {
@@ -897,7 +886,7 @@
                     bestTimeElement.textContent = finalTime.toFixed(1) + '초';
                 }
             }
-
+            
             // 1. 먼저 전면 광고를 보여줌
             document.getElementById('interstitial-ad').style.display = 'flex';
         }
@@ -982,12 +971,12 @@
                 const elapsedSeconds = (time - gameStartTime) / 1000;
                 const speedIncrease = Math.floor(elapsedSeconds / 10) * 0.3;
                 globalSpeed = 6 + speedIncrease; // 기본 속도 6에서 시작하여 점진적으로 증가
-
+                
                 // 생성 속도도 점진적으로 빨라짐 (10초마다 20ms 감소, 최소 150ms)
                 const rateDecrease = Math.floor(elapsedSeconds / 10) * 20;
                 spawnRate = Math.max(150, 650 - rateDecrease);
             }
-
+            
             if (time - lastSpawnTime > 2000) lastSpawnTime = time;
             if (time - lastSpawnTime > spawnRate) {
                 spawnItem();
@@ -1080,30 +1069,14 @@
         };
 
         window.addEventListener('mousemove', moveBasket);
-        window.addEventListener('touchmove', (e) => {
-            e.preventDefault(); // 스크롤 방지
-            moveBasket(e);
-        }, { passive: false });
-
-        // 추가 스크롤 방지
-        document.addEventListener('touchstart', (e) => {
-            if (e.touches.length > 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-
-        document.addEventListener('touchmove', (e) => {
-            if (e.touches.length > 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-
+        window.addEventListener('touchmove', moveBasket, { passive: false });
+        
         // 스크롤 방지 강화
         document.addEventListener('scroll', (e) => {
             e.preventDefault();
             window.scrollTo(0, 0);
         }, { passive: false });
-
+        
         // wheel 이벤트로 인한 스크롤 방지
         document.addEventListener('wheel', (e) => {
             if (e.ctrlKey) {
