@@ -14,53 +14,25 @@
             document.documentElement.scrollTop = 0;
             if (document.body) document.body.scrollTop = 0;
             
-            // 즉시 스크롤 방지 및 화면 고정 - 최종 최종 버전
+            // 즉시 스크롤 방지 및 화면 고정 - 모든 브라우저 호환 버전
             function immediateLock() {
-                // visualViewport 높이 사용 (가장 정확함)
-                let vh = window.innerHeight;
-                if (window.visualViewport && window.visualViewport.height) {
-                    vh = Math.floor(window.visualViewport.height);
-                } else {
-                    vh = Math.floor(window.innerHeight);
-                }
-                
                 // 스크롤 위치 강제 고정
                 window.scrollTo(0, 0);
                 if (document.documentElement) {
                     document.documentElement.scrollTop = 0;
-                    document.documentElement.style.position = 'fixed';
-                    document.documentElement.style.top = '0';
-                    document.documentElement.style.left = '0';
-                    document.documentElement.style.right = '0';
-                    document.documentElement.style.bottom = '0';
-                    document.documentElement.style.height = vh + 'px';
-                    document.documentElement.style.width = '100%';
-                    document.documentElement.style.overflow = 'hidden';
-                    document.documentElement.style.margin = '0';
-                    document.documentElement.style.padding = '0';
                 }
                 if (document.body) {
                     document.body.scrollTop = 0;
-                    document.body.style.position = 'fixed';
-                    document.body.style.top = '0';
-                    document.body.style.left = '0';
-                    document.body.style.right = '0';
-                    document.body.style.bottom = '0';
-                    document.body.style.height = vh + 'px';
-                    document.body.style.width = '100vw';
-                    document.body.style.overflow = 'hidden';
-                    document.body.style.margin = '0';
-                    document.body.style.padding = '0';
                 }
             }
             
             // 즉시 실행
             immediateLock();
             
-            // 매우 빠른 간격으로 계속 실행 (브라우저가 높이를 변경하기 전에 고정)
+            // 빠른 간격으로 계속 실행
             const immediateInterval = setInterval(() => {
                 immediateLock();
-            }, 1); // 1ms마다 실행 (최대한 빠르게)
+            }, 50); // 50ms마다 실행
             
             // 영원히 실행 (정리하지 않음)
         })();
@@ -76,6 +48,7 @@
         }
         html { 
             width: 100% !important; 
+            height: 100% !important;
             overflow: hidden !important; 
             margin: 0 !important;
             padding: 0 !important;
@@ -86,12 +59,13 @@
             left: 0 !important;
             right: 0 !important;
             bottom: 0 !important;
-            /* 높이는 JavaScript로만 설정 */
         }
         body {
             margin: 0 !important;
             padding: 0 !important;
             width: 100vw !important;
+            height: 100vh !important;
+            max-height: 100vh !important;
             overflow: hidden !important;
             position: fixed !important;
             top: 0 !important;
@@ -109,7 +83,6 @@
             overscroll-behavior: none !important;
             -webkit-user-select: none !important;
             user-select: none !important;
-            /* 높이는 JavaScript로만 설정 */
         }
         /* 광고 영역의 높이를 숫자로 고정 */
         .ad-top {
@@ -570,43 +543,15 @@
             }, 100);
         }
         
-        // 화면 고정 함수 (모바일 브라우저 강제 고정) - 광고 영역 유지 - 최종 최종 최종 버전
+        // 화면 고정 함수 (모바일 브라우저 강제 고정) - 모든 브라우저 호환 버전
         function lockScreen() {
-            // visualViewport 높이 사용 (가장 정확함)
-            let vh = window.innerHeight;
-            if (window.visualViewport && window.visualViewport.height) {
-                vh = Math.floor(window.visualViewport.height);
-            } else {
-                vh = Math.floor(window.innerHeight);
-            }
-            
             // 즉시 스크롤 방지
             window.scrollTo(0, 0);
             if (document.documentElement) {
                 document.documentElement.scrollTop = 0;
-                document.documentElement.style.position = 'fixed';
-                document.documentElement.style.top = '0';
-                document.documentElement.style.left = '0';
-                document.documentElement.style.right = '0';
-                document.documentElement.style.bottom = '0';
-                document.documentElement.style.height = vh + 'px';
-                document.documentElement.style.width = '100%';
-                document.documentElement.style.overflow = 'hidden';
-                document.documentElement.style.margin = '0';
-                document.documentElement.style.padding = '0';
             }
             if (document.body) {
                 document.body.scrollTop = 0;
-                document.body.style.position = 'fixed';
-                document.body.style.top = '0';
-                document.body.style.left = '0';
-                document.body.style.right = '0';
-                document.body.style.bottom = '0';
-                document.body.style.height = vh + 'px';
-                document.body.style.width = '100vw';
-                document.body.style.overflow = 'hidden';
-                document.body.style.margin = '0';
-                document.body.style.padding = '0';
             }
             
             // 스크롤 위치는 항상 확인 및 강제 고정
