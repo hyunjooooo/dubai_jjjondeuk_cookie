@@ -13,7 +13,7 @@
         * { box-sizing: border-box; }
         html { height: 100%; width: 100%; overflow: hidden; position: fixed; }
         body { text-align: center; background: #1a1a1a; font-family: 'Jua', sans-serif; margin: 0; padding: 0; height: 100%; width: 100vw; overflow: hidden; position: fixed; color: white; touch-action: none; display: flex; flex-direction: column; }
-        .ad-top { background: #333; height: 50px; line-height: 50px; font-size: 11px; color: #888; flex-shrink: 0; }
+        .ad-top { background: #333; min-height: 50px; line-height: 50px; font-size: 11px; color: #888; flex-shrink: 0; }
         #ui-header { padding: 15px 10px; background: #222; position: relative; /* 버튼 배치의 기준점 */display: flex; flex-direction: column; align-items: center;justify-content: center;min-height: 110px; /* [최적화] 버튼이 들어갈 충분한 높이 확보 */}
         .title { color: #ffeb3b; font-size: 1.4rem; margin-bottom: 5px; }
         .price-tag { color: #ff5252; font-size: 1.1rem; }
@@ -46,7 +46,7 @@
         /* 하단 광고 영역 확대 (수익 극대화 배치) */
         .ad-bottom { 
             background: #333; 
-            height: 250px; /* 큰 사각형 광고(Medium Rectangle)가 들어갈 수 있는 크기 */
+            min-height: 100px; /* 광고가 없어도 최소 높이 확보 */
             line-height: 250px; 
             color: #ffeb3b; 
             font-size: 16px; 
@@ -56,7 +56,7 @@
         
         @media (max-width: 768px) {
             .ad-bottom {
-                height: 100px;
+                min-height: 100px;
                 line-height: 100px;
                 font-size: 14px;
             }
@@ -346,23 +346,20 @@
         const imgCoin = new Image(); imgCoin.src = 'coin.png';
 
         function resizeCanvas() {
-            // 인앱 브라우저 상하단바 대응을 위해 0.1초 뒤에 다시 계산
+            // 인앱 브라우저 툴바 대응을 위해 아주 짧은 대기 후 계산
             setTimeout(() => {
-                // visualViewport API 사용 (인앱 브라우저 대응)
-                const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+                const viewportHeight = window.innerHeight; // 현재 실제 보이는 높이값
                 const headerHeight = document.getElementById('ui-header').offsetHeight;
-                const adTop = document.querySelector('.ad-top');
-                const adBottom = document.querySelector('.ad-bottom');
-                const adTopHeight = adTop ? adTop.offsetHeight : 0;
-                const adBottomHeight = adBottom ? adBottom.offsetHeight : 0;
+                const adTopHeight = document.querySelector('.ad-top').offsetHeight;
+                const adBottomHeight = document.querySelector('.ad-bottom').offsetHeight;
 
                 canvas.width = Math.min(container.clientWidth, 500);
-                // 전체 높이에서 헤더와 광고 영역을 뺀 나머지만 캔버스 높이로 설정
-                const calculatedHeight = viewportHeight - headerHeight - adTopHeight - adBottomHeight;
-                canvas.height = Math.max(calculatedHeight, 200); // 최소 높이 보장
                 
-                basket.x = canvas.width / 2 - 40;
-                basket.y = canvas.height - 90;
+                // 전체 높이에서 광고와 헤더 높이를 뺀 나머지만 캔버스 높이로 설정
+                canvas.height = viewportHeight - headerHeight - adTopHeight - adBottomHeight;
+                
+                basket.x = canvas.width / 2 - 35;
+                basket.y = canvas.height - 80;
                 
                 // canvas의 실제 위치를 getBoundingClientRect로 정확히 계산
                 const canvasRect = canvas.getBoundingClientRect();
