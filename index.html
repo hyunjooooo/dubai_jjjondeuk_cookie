@@ -11,14 +11,25 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
         * { box-sizing: border-box; }
-        html { height: 100%; width: 100%; overflow: hidden; position: fixed; }
+        html { 
+            height: 100%; 
+            width: 100%; 
+            overflow: hidden; 
+            position: fixed; 
+            margin: 0;
+            padding: 0;
+        }
         body {
             margin: 0;
             padding: 0;
             width: 100vw;
-            height: 100dvh; /* dvh 단위가 아이폰 툴바 밀림을 방지합니다 */
+            height: 100vh; /* vh 사용 (크롬/인앱 브라우저 호환성) */
+            min-height: 100vh;
+            max-height: 100vh;
             overflow: hidden;
-            position: fixed; /* 전체 화면 위치를 고정합니다 */
+            position: fixed; /* 브라우저가 화면을 밀어올리지 못하게 못박음 */
+            top: 0;
+            left: 0;
             display: flex;
             flex-direction: column;
             background: #1a1a1a;
@@ -54,17 +65,19 @@
         .time-text { font-size: 1.1rem; color: #2196f3; }
         .best-time { font-size: 0.9rem; color: #ff9800; }
         #game-container {
-            flex-grow: 1; /* 남은 공간을 캔버스가 꽉 채움 */
+            flex-grow: 1; /* 상단/하단 광고를 제외한 남은 공간을 강제로 꽉 채움 */
             position: relative;
             width: 100%;
             background: #222;
             display: flex;
             justify-content: center;
             align-items: center;
+            overflow: hidden; /* 영역 밖으로 밀려나지 않게 방지 */
         }
         canvas {
             display: block;
             background: #2c2c2c;
+            /* 중요: 캔버스가 부모 영역을 절대 넘지 못하게 설정 */
             max-width: 100%;
             max-height: 100%;
         }
@@ -341,7 +354,6 @@
         </script>
     </div>
     <div id="interstitial-ad">
-        <div style="margin-bottom: 20px; color: #ffeb3b;">▼ 전면 광고 영역 (수익 5배!)</div>
         <!-- 전면광고 -->
         <ins class="adsbygoogle"
              style="display:block"
@@ -384,10 +396,16 @@
         // 최고 기록 저장
         function saveBestTime(time) {
             const bestTime = localStorage.getItem('dubaiCookieBestTime');
-            if (!bestTime || parseFloat(time) < parseFloat(bestTime)) {
-                localStorage.setItem('dubaiCookieBestTime', time.toString());
-                document.getElementById('best-time').textContent = parseFloat(time).toFixed(1) + '초';
+            const currentTime = parseFloat(time);
+            if (!bestTime || currentTime < parseFloat(bestTime)) {
+                localStorage.setItem('dubaiCookieBestTime', currentTime.toString());
+                const bestTimeElement = document.getElementById('best-time');
+                if (bestTimeElement) {
+                    bestTimeElement.textContent = currentTime.toFixed(1) + '초';
+                }
+                return true; // 기록 갱신됨
             }
+            return false; // 기록 갱신 안 됨
         }
         
         loadBestTime();
@@ -404,19 +422,83 @@
                 if (!container) return;
 
                 // 중앙 게임 영역 박스의 실제 크기를 측정해서 캔버스에 입힙니다.
-                canvas.width = container.clientWidth;
+                canvas.width = Math.min(container.clientWidth, 500);
                 canvas.height = container.clientHeight;
 
                 // 캐릭터(바구니) 위치를 바닥에서 80px 위로 재조정합니다.
                 basket.x = canvas.width / 2 - 40;
                 basket.y = canvas.height - 80;
+                
+                // canvas의 실제 위치를 getBoundingClientRect로 정확히 계산
+                const canvasRect = canvas.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                const spacing = 20; // canvas와 좌우 요소 사이의 간격
+                
+                // canvas의 왼쪽 끝 위치 (container 기준)
+                const canvasLeftInContainer = canvasRect.left - containerRect.left;
+                // canvas의 오른쪽 끝 위치 (container 기준)
+                const canvasRightInContainer = canvasRect.right - containerRect.left;
+                
+                // 힌트 박스를 canvas 왼쪽 밖에 배치
+                const hintBox = document.getElementById('hint-box');
+                if (hintBox) {
+                    hintBox.style.left = (canvasLeftInContainer - spacing) + 'px';
+                    hintBox.style.transform = 'translateX(-100%) translateY(-50%)';
+                    hintBox.style.textAlign = 'right';
+                }
+                
+                // 구매 버튼을 canvas 오른쪽 밖에 배치 (데스크톱만)
+                if (window.innerWidth > 768) {
+                    const buyBtn = document.getElementById('buy-btn');
+                    if (buyBtn) {
+                        const btnLeft = canvasRightInContainer + spacing;
+                        buyBtn.style.left = btnLeft + 'px';
+                        buyBtn.style.right = 'auto';
+                        buyBtn.style.position = 'absolute';
+                        buyBtn.style.bottom = 'auto';
+                        buyBtn.style.top = '50%';
+                        buyBtn.style.transform = 'translateY(-50%)';
+                    }
+                }
+                // 모바일은 CSS의 fixed position으로 처리
             }, 200);
         }
         
         // 여러 이벤트에 대응하여 화면을 다시 그리게 함
-        window.addEventListener('resize', resizeCanvas);
-        window.addEventListener('load', resizeCanvas);
-        window.addEventListener('orientationchange', resizeCanvas);
+        function handleResize() {
+            // 스크롤 방지
+            window.scrollTo(0, 0);
+            document.body.style.position = 'fixed';
+            document.body.style.top = '0';
+            document.body.style.left = '0';
+            document.body.style.height = window.innerHeight + 'px';
+            resizeCanvas();
+        }
+        
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('load', () => {
+            window.scrollTo(0, 0);
+            handleResize();
+        });
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+                handleResize();
+            }, 300);
+        });
+        
+        // 스크롤 방지 강화
+        window.addEventListener('scroll', () => {
+            window.scrollTo(0, 0);
+        }, { passive: false });
+        
+        // touchmove로 인한 스크롤 방지
+        document.addEventListener('touchmove', (e) => {
+            if (e.target === document.body || e.target === document.documentElement) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
         resizeCanvas();
 
         function startGame() {
@@ -499,7 +581,22 @@
                 gameTimer = null;
             }
             const finalTime = (performance.now() - gameStartTime) / 1000;
-            saveBestTime(finalTime);
+            
+            // 엔딩 화면에 시간 표시
+            const endTimeElement = document.getElementById('end-time');
+            if (endTimeElement) {
+                endTimeElement.textContent = finalTime.toFixed(1);
+            }
+            
+            // 최고 기록 저장 및 갱신
+            const isNewRecord = saveBestTime(finalTime);
+            if (isNewRecord) {
+                // 최고 기록 갱신 시 UI 업데이트
+                const bestTimeElement = document.getElementById('best-time');
+                if (bestTimeElement) {
+                    bestTimeElement.textContent = finalTime.toFixed(1) + '초';
+                }
+            }
             
             // 1. 먼저 전면 광고를 보여줌
             document.getElementById('interstitial-ad').style.display = 'flex';
@@ -580,6 +677,17 @@
         }
 
         function update(time) {
+            // 시간에 따라 난이도 증가 (10초마다 속도 0.3 증가)
+            if (gameStartTime > 0) {
+                const elapsedSeconds = (time - gameStartTime) / 1000;
+                const speedIncrease = Math.floor(elapsedSeconds / 10) * 0.3;
+                globalSpeed = 6 + speedIncrease; // 기본 속도 6에서 시작하여 점진적으로 증가
+                
+                // 생성 속도도 점진적으로 빨라짐 (10초마다 20ms 감소, 최소 150ms)
+                const rateDecrease = Math.floor(elapsedSeconds / 10) * 20;
+                spawnRate = Math.max(150, 650 - rateDecrease);
+            }
+            
             if (time - lastSpawnTime > 2000) lastSpawnTime = time;
             if (time - lastSpawnTime > spawnRate) {
                 spawnItem();
