@@ -636,16 +636,17 @@
             if (lockInterval) {
                 clearInterval(lockInterval);
             }
+            // setInterval과 requestAnimationFrame 둘 다 사용하여 이중 보호
             lockInterval = setInterval(() => {
                 lockScreen();
                 // 스크롤 위치 강제 고정
                 if (window.scrollY !== 0 || window.pageYOffset !== 0 || 
                     document.documentElement.scrollTop !== 0 || document.body.scrollTop !== 0) {
                     window.scrollTo(0, 0);
-                    document.documentElement.scrollTop = 0;
-                    document.body.scrollTop = 0;
+                    if (document.documentElement) document.documentElement.scrollTop = 0;
+                    if (document.body) document.body.scrollTop = 0;
                 }
-            }, 16); // 약 60fps로 화면 고정 확인
+            }, 10); // 10ms마다 확인 (매우 빠른 반응)
         }
         
         // 초기화 함수 (한 번만 실행)
@@ -683,9 +684,14 @@
         
         // 페이지 언로드 시 정리
         window.addEventListener('beforeunload', () => {
+            lockScreen();
             if (lockInterval) {
                 clearInterval(lockInterval);
                 lockInterval = null;
+            }
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
             }
             isInitialized = false;
         }, { once: true });
@@ -717,61 +723,70 @@
             lockScreen();
         }, { passive: false });
         
-        // touchmove로 인한 스크롤 방지
+        // touchmove로 인한 스크롤 방지 - 강화
         document.addEventListener('touchmove', (e) => {
+            const target = e.target;
             // canvas나 특정 요소가 아닌 경우 스크롤 방지
-            if (e.target === document.body || e.target === document.documentElement || 
-                e.target.tagName === 'HTML' || e.target.tagName === 'BODY') {
-                e.preventDefault();
+            if (target.tagName === 'CANVAS' || target.closest('#game-container') || 
+                target.closest('button') || target.closest('a')) {
+                // 게임 영역, 버튼, 링크는 허용
+                return;
             }
-        }, { passive: false });
+            // 그 외의 경우 스크롤 완전 차단
+            e.preventDefault();
+            e.stopPropagation();
+            window.scrollTo(0, 0);
+        }, { passive: false, capture: true });
         
-        // touchstart에서도 스크롤 방지
+        // touchstart도 차단 (스크롤 시작 자체를 막음)
         document.addEventListener('touchstart', (e) => {
-            if (e.target === document.body || e.target === document.documentElement) {
-                e.preventDefault();
+            const target = e.target;
+            if (target.tagName === 'CANVAS' || target.closest('#game-container') || 
+                target.closest('button') || target.closest('a')) {
+                return;
             }
-        }, { passive: false });
+            // 스크롤 시작 방지
+            if (window.scrollY !== 0 || window.pageYOffset !== 0) {
+                window.scrollTo(0, 0);
+            }
+        }, { passive: false, capture: true });
         
         // wheel 이벤트로 인한 스크롤 방지
         document.addEventListener('wheel', (e) => {
             e.preventDefault();
         }, { passive: false });
         
-        // visualViewport API 사용 (모바일 브라우저 주소창 대응)
+        // visualViewport API 사용 (모바일 브라우저 주소창 대응) - 강화된 버전
         if (window.visualViewport) {
+            // resize 이벤트: 높이 변화를 실시간으로 감지
+            window.visualViewport.addEventListener('resize', () => {
+                lockScreen();
+                setTimeout(() => {
+                    lockScreen();
+                    handleResize();
+                }, 50);
+            }, { passive: true });
+            
+            // scroll 이벤트: 스크롤 완전 차단
             window.visualViewport.addEventListener('scroll', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 window.scrollTo(0, 0);
-                document.documentElement.scrollTop = 0;
-                document.body.scrollTop = 0;
-                lockScreen();
-            }, { passive: false });
-            
-            window.visualViewport.addEventListener('resize', () => {
-                lockScreen();
-                handleResize();
-            });
-            
-            window.visualViewport.addEventListener('scroll', () => {
-                window.scrollTo(0, 0);
+                if (document.documentElement) document.documentElement.scrollTop = 0;
+                if (document.body) document.body.scrollTop = 0;
                 lockScreen();
             }, { passive: false });
         }
         
-        // 추가: requestAnimationFrame으로 지속적 모니터링
+        // requestAnimationFrame으로 지속적으로 화면 고정 (가장 확실한 방법)
+        let rafId = null;
         function continuousLock() {
             lockScreen();
-            // 스크롤 위치 강제 고정
-            if (window.scrollY !== 0 || window.pageYOffset !== 0 || 
-                document.documentElement.scrollTop !== 0 || document.body.scrollTop !== 0) {
-                window.scrollTo(0, 0);
-                document.documentElement.scrollTop = 0;
-                document.body.scrollTop = 0;
-            }
-            requestAnimationFrame(continuousLock);
+            rafId = requestAnimationFrame(continuousLock);
         }
+        
+        // continuousLock 시작
+        continuousLock();
         // 즉시 시작
         continuousLock();
         
