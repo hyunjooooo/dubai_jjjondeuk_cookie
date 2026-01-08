@@ -14,40 +14,27 @@
             document.documentElement.scrollTop = 0;
             if (document.body) document.body.scrollTop = 0;
             
-            // 즉시 body와 html 고정 - 강화된 버전
+            // 즉시 body와 html 고정 - 최종 강화 버전
             function immediateLock() {
                 // visualViewport 우선 사용, 없으면 innerHeight
-                const viewportHeight = (window.visualViewport && window.visualViewport.height) 
+                let viewportHeight = (window.visualViewport && window.visualViewport.height) 
                     ? Math.floor(window.visualViewport.height) 
                     : Math.floor(window.innerHeight);
                 
+                // 높이가 0이면 screen.height 사용
+                if (viewportHeight <= 0 && window.screen && window.screen.height) {
+                    viewportHeight = Math.floor(window.screen.height);
+                }
+                
                 if (viewportHeight > 0 && document.documentElement) {
-                    // html 설정
+                    // html 설정 - position: fixed 사용
                     const html = document.documentElement;
-                    html.style.position = 'fixed';
-                    html.style.top = '0';
-                    html.style.left = '0';
-                    html.style.right = '0';
-                    html.style.bottom = '0';
-                    html.style.overflow = 'hidden';
-                    html.style.height = viewportHeight + 'px';
-                    html.style.width = '100%';
-                    html.style.margin = '0';
-                    html.style.padding = '0';
+                    html.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; overflow: hidden !important; height: ' + viewportHeight + 'px !important; width: 100% !important; margin: 0 !important; padding: 0 !important;';
                     
-                    // body 설정
+                    // body 설정 - position: fixed 사용
                     if (document.body) {
                         const body = document.body;
-                        body.style.position = 'fixed';
-                        body.style.top = '0';
-                        body.style.left = '0';
-                        body.style.right = '0';
-                        body.style.bottom = '0';
-                        body.style.overflow = 'hidden';
-                        body.style.height = viewportHeight + 'px';
-                        body.style.width = '100vw';
-                        body.style.margin = '0';
-                        body.style.padding = '0';
+                        body.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; overflow: hidden !important; height: ' + viewportHeight + 'px !important; width: 100vw !important; margin: 0 !important; padding: 0 !important;';
                     }
                     
                     // 스크롤 위치 강제 고정
@@ -63,7 +50,7 @@
             // 매우 빠른 간격으로 계속 실행 (브라우저가 높이를 변경하기 전에 고정)
             const immediateInterval = setInterval(() => {
                 immediateLock();
-            }, 5); // 5ms마다 실행
+            }, 1); // 1ms마다 실행 (최대한 빠르게)
             
             // DOM이 준비되면 정리
             if (document.readyState === 'loading') {
@@ -74,7 +61,7 @@
             } else {
                 setTimeout(() => {
                     clearInterval(immediateInterval);
-                }, 1000); // 1초 후 정리
+                }, 2000); // 2초 후 정리
             }
             
             // 스크롤 이벤트 즉시 차단
@@ -101,27 +88,17 @@
         html { 
             width: 100% !important; 
             overflow: hidden !important; 
-            position: fixed !important; 
             margin: 0 !important;
             padding: 0 !important;
             touch-action: none !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
             -webkit-overflow-scrolling: none !important;
-            /* 높이는 JavaScript로만 설정 */
+            /* position과 높이는 JavaScript로만 설정 */
         }
         body {
             margin: 0 !important;
             padding: 0 !important;
             width: 100vw !important;
             overflow: hidden !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
             display: flex !important;
             flex-direction: column !important;
             background: #1a1a1a;
@@ -133,7 +110,7 @@
             overscroll-behavior: none !important;
             -webkit-user-select: none !important;
             user-select: none !important;
-            /* 높이는 JavaScript로만 설정 - CSS에서는 완전히 제거 */
+            /* position과 높이는 JavaScript로만 설정 - CSS에서는 완전히 제거 */
         }
         /* 광고 영역의 높이를 숫자로 고정 */
         .ad-top {
@@ -202,8 +179,8 @@
         /* 팝업 메시지 스타일 */
         #msg-pop { position: absolute; width: 100%; top: 30%; left: 0; font-size: 2.2rem; display: none; text-shadow: 3px 3px #000; z-index: 20; font-weight: bold; pointer-events: none; }
         /* 하단 광고 영역 확대 (수익 극대화 배치) */
-        .ad-bottom {
-            background: #333;
+        .ad-bottom { 
+            background: #333; 
             height: 100px !important; 
             min-height: 100px !important;
             line-height: 250px; 
@@ -365,7 +342,7 @@
             <p>폭등하는 물가를 뚫고 쿠키 10개를 쟁취하십시오.</p>
         </div>
         <div class="start-buttons" style="display: flex; flex-direction: column; gap: 10px; justify-content: center; align-items: center;">
-            <button class="btn-main" onclick="startGame()">게임 시작</button>
+        <button class="btn-main" onclick="startGame()">게임 시작</button>
             <button class="btn-main" style="background: #666;" onclick="showInfo()">게임 방법</button>
         </div>
         <div class="social-buttons" style="margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
@@ -568,29 +545,29 @@
                 // 힌트 박스를 canvas 왼쪽 밖에 배치
                 const hintBox = document.getElementById('hint-box');
                 if (hintBox) {
-                    hintBox.style.left = (canvasLeftInContainer - spacing) + 'px';
-                    hintBox.style.transform = 'translateX(-100%) translateY(-50%)';
-                    hintBox.style.textAlign = 'right';
+                hintBox.style.left = (canvasLeftInContainer - spacing) + 'px';
+                hintBox.style.transform = 'translateX(-100%) translateY(-50%)';
+                hintBox.style.textAlign = 'right';
                 }
                 
                 // 구매 버튼을 canvas 오른쪽 밖에 배치 (데스크톱만)
                 if (window.innerWidth > 768) {
                     const buyBtn = document.getElementById('buy-btn');
                     if (buyBtn) {
-                        const btnLeft = canvasRightInContainer + spacing;
-                        buyBtn.style.left = btnLeft + 'px';
-                        buyBtn.style.right = 'auto';
-                        buyBtn.style.position = 'absolute';
-                        buyBtn.style.bottom = 'auto';
-                        buyBtn.style.top = '50%';
-                        buyBtn.style.transform = 'translateY(-50%)';
+                    const btnLeft = canvasRightInContainer + spacing;
+                    buyBtn.style.left = btnLeft + 'px';
+                    buyBtn.style.right = 'auto';
+                    buyBtn.style.position = 'absolute';
+                    buyBtn.style.bottom = 'auto';
+                    buyBtn.style.top = '50%';
+                    buyBtn.style.transform = 'translateY(-50%)';
                     }
                 }
                 // 모바일은 CSS의 fixed position으로 처리
             }, 300);
         }
         
-        // 화면 고정 함수 (모바일 브라우저 강제 고정) - 광고 영역 유지 - 최종 강화 버전
+        // 화면 고정 함수 (모바일 브라우저 강제 고정) - 광고 영역 유지 - 최종 최종 강화 버전
         let lastKnownHeight = 0;
         function lockScreen() {
             // 즉시 스크롤 방지
@@ -611,40 +588,24 @@
                 viewportHeight = Math.floor(window.innerHeight);
             }
             
-            // 높이가 0이거나 유효하지 않으면 이전 값 사용
-            if (viewportHeight <= 0 && lastKnownHeight > 0) {
-                viewportHeight = lastKnownHeight;
+            // 높이가 0이거나 유효하지 않으면 이전 값 또는 screen.height 사용
+            if (viewportHeight <= 0) {
+                if (lastKnownHeight > 0) {
+                    viewportHeight = lastKnownHeight;
+                } else if (window.screen && window.screen.height) {
+                    viewportHeight = Math.floor(window.screen.height);
+                }
             }
             
             // 항상 업데이트 (높이 변경 여부와 관계없이)
             if (viewportHeight > 0) {
                 lastKnownHeight = viewportHeight;
                 
-                // html 설정 (setProperty 사용하지 않고 직접 설정 - 더 빠름)
-                html.style.position = 'fixed';
-                html.style.top = '0';
-                html.style.left = '0';
-                html.style.right = '0';
-                html.style.bottom = '0';
-                html.style.overflow = 'hidden';
-                html.style.height = viewportHeight + 'px';
-                html.style.width = '100%';
-                html.style.margin = '0';
-                html.style.padding = '0';
+                // html 설정 - cssText 사용으로 한 번에 설정 (더 빠름)
+                html.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; overflow: hidden !important; height: ' + viewportHeight + 'px !important; width: 100% !important; margin: 0 !important; padding: 0 !important;';
                 
-                // body 설정
-                body.style.position = 'fixed';
-                body.style.top = '0';
-                body.style.left = '0';
-                body.style.right = '0';
-                body.style.bottom = '0';
-                body.style.width = '100vw';
-                body.style.height = viewportHeight + 'px';
-                body.style.minHeight = viewportHeight + 'px';
-                body.style.maxHeight = viewportHeight + 'px';
-                body.style.overflow = 'hidden';
-                body.style.margin = '0';
-                body.style.padding = '0';
+                // body 설정 - cssText 사용으로 한 번에 설정 (더 빠름)
+                body.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; overflow: hidden !important; height: ' + viewportHeight + 'px !important; min-height: ' + viewportHeight + 'px !important; max-height: ' + viewportHeight + 'px !important; width: 100vw !important; margin: 0 !important; padding: 0 !important;';
             }
             
             // 스크롤 위치는 항상 확인 및 강제 고정
