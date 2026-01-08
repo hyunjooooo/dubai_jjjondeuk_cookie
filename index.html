@@ -159,6 +159,7 @@
 </head>
 <body>
     <div class="ad-top">
+        <div style="font-size: 0.7rem; color: #666; text-align: center; line-height: 1.2; padding-top: 5px;">© 2026 dubaijjondeukcookie. All rights reserved.</div>
         <!-- 상단_배너 -->
         <ins class="adsbygoogle"
              style="display:block"
@@ -182,6 +183,20 @@
         <p>당신은 집념의 서민입니다.<br>두바이 쿠키 10개를 다 모았습니다!</p>
         <p style="font-size: 1.3rem; color: #ffeb3b; margin: 20px 0;">플레이 시간: <span id="end-time">0</span>초</p>
         <button class="btn-main" onclick="location.reload()">다시 하기</button>
+    </div>
+    <div id="info-screen" class="overlay" style="display: none;">
+        <div style="padding: 20px; color: #888; font-size: 0.9rem; text-align: left; max-width: 500px; margin: 0 auto; line-height: 1.6; background: rgba(0,0,0,0.8); border-radius: 15px; max-height: 80vh; overflow-y: auto;">
+            <h3 style="color: #ffeb3b; margin-top: 0;">🎮 게임 소개 및 방법</h3>
+            <p>본 게임은 급격히 상승하는 물가(두바이 쫀득 쿠키 시세)를 견디며 코인을 모아 쿠키 10개를 구매하는 생존 시뮬레이션 게임입니다.</p>
+            <ul>
+                <li><b>조작 방법:</b> 마우스나 터치로 캐릭터를 좌우로 이동하세요.</li>
+                <li><b>아이템:</b> 코인은 돈을 올려주며, 똥은 잔고의 30%를 차감합니다.</li>
+                <li><b>목표:</b> 시세가 더 오르기 전에 전략적으로 쿠키를 구매하여 10개를 채우세요!</li>
+            </ul>
+            <hr style="border: 0.5px solid #444;">
+            <p style="text-align: center; margin-bottom: 0;">© 2026 최현주 (dubaijjondeukcookie). All rights reserved.</p>
+        </div>
+        <button class="btn-main" style="margin-top: 20px;" onclick="closeInfo()">닫기</button>
     </div>
     <div id="ui-header">
         <div class="title">💸 떡상하는 두바이쫀득쿠키</div>
@@ -405,6 +420,16 @@
             const finalTime = (performance.now() - gameStartTime) / 1000;
             document.getElementById('end-time').textContent = finalTime.toFixed(1);
             document.getElementById('end-screen').style.display = 'flex';
+        }
+
+        // 게임 방법 보기 함수
+        function showInfo() {
+            document.getElementById('info-screen').style.display = 'flex';
+        }
+
+        // 게임 방법 닫기 함수
+        function closeInfo() {
+            document.getElementById('info-screen').style.display = 'none';
         }
 
         function spawnItem() {
