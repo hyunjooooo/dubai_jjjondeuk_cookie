@@ -14,29 +14,34 @@
         html { 
             height: 100%; 
             width: 100%; 
-            overflow: hidden; 
-            position: fixed; 
+            overflow: hidden !important; 
+            position: fixed !important; 
             margin: 0;
             padding: 0;
+            touch-action: none;
         }
         body {
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100vh; /* vh 사용 (크롬/인앱 브라우저 호환성) */
-            min-height: 100vh;
-            max-height: 100vh;
-            overflow: hidden;
-            position: fixed; /* 브라우저가 화면을 밀어올리지 못하게 못박음 */
-            top: 0;
-            left: 0;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            min-height: 100vh !important;
+            max-height: 100vh !important;
+            overflow: hidden !important;
+            position: fixed !important; /* 브라우저가 화면을 밀어올리지 못하게 못박음 */
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
             display: flex;
             flex-direction: column;
             background: #1a1a1a;
             text-align: center; 
             font-family: 'Jua', sans-serif; 
             color: white; 
-            touch-action: none; 
+            touch-action: none !important; 
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: none;
         }
         /* 광고 영역의 높이를 숫자로 고정 */
         .ad-top {
@@ -464,41 +469,134 @@
             }, 200);
         }
         
+        // 화면 고정 함수 (모바일 브라우저 강제 고정)
+        function lockScreen() {
+            // 즉시 스크롤 방지
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+            
+            // body와 html 강제 고정
+            const body = document.body;
+            const html = document.documentElement;
+            const viewportHeight = window.innerHeight;
+            
+            body.style.position = 'fixed';
+            body.style.top = '0';
+            body.style.left = '0';
+            body.style.right = '0';
+            body.style.bottom = '0';
+            body.style.width = '100vw';
+            body.style.height = viewportHeight + 'px';
+            body.style.overflow = 'hidden';
+            body.style.margin = '0';
+            body.style.padding = '0';
+            
+            html.style.position = 'fixed';
+            html.style.overflow = 'hidden';
+            html.style.height = '100%';
+            html.style.width = '100%';
+            html.style.margin = '0';
+            html.style.padding = '0';
+        }
+        
         // 여러 이벤트에 대응하여 화면을 다시 그리게 함
         function handleResize() {
-            // 스크롤 방지
-            window.scrollTo(0, 0);
-            document.body.style.position = 'fixed';
-            document.body.style.top = '0';
-            document.body.style.left = '0';
-            document.body.style.height = window.innerHeight + 'px';
+            lockScreen();
             resizeCanvas();
         }
         
-        window.addEventListener('resize', handleResize);
+        // 지속적으로 화면 고정 유지 (모바일 브라우저 주소창 대응)
+        let lockInterval = null;
+        function startLocking() {
+            if (lockInterval) clearInterval(lockInterval);
+            lockInterval = setInterval(() => {
+                lockScreen();
+            }, 100); // 0.1초마다 화면 고정 확인
+        }
+        
+        // 초기 로드 시
         window.addEventListener('load', () => {
-            window.scrollTo(0, 0);
+            lockScreen();
+            handleResize();
+            startLocking();
+        });
+        
+        // DOMContentLoaded에서도 실행
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                lockScreen();
+                startLocking();
+            });
+        } else {
+            lockScreen();
+            startLocking();
+        }
+        
+        // 리사이즈 이벤트
+        window.addEventListener('resize', () => {
+            lockScreen();
             handleResize();
         });
+        
+        // 화면 회전
         window.addEventListener('orientationchange', () => {
             setTimeout(() => {
-                window.scrollTo(0, 0);
+                lockScreen();
                 handleResize();
             }, 300);
         });
         
         // 스크롤 방지 강화
-        window.addEventListener('scroll', () => {
+        window.addEventListener('scroll', (e) => {
+            e.preventDefault();
             window.scrollTo(0, 0);
+            lockScreen();
+        }, { passive: false });
+        
+        document.addEventListener('scroll', (e) => {
+            e.preventDefault();
+            window.scrollTo(0, 0);
+            lockScreen();
         }, { passive: false });
         
         // touchmove로 인한 스크롤 방지
         document.addEventListener('touchmove', (e) => {
+            // canvas나 특정 요소가 아닌 경우 스크롤 방지
+            if (e.target === document.body || e.target === document.documentElement || 
+                e.target.tagName === 'HTML' || e.target.tagName === 'BODY') {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        // touchstart에서도 스크롤 방지
+        document.addEventListener('touchstart', (e) => {
             if (e.target === document.body || e.target === document.documentElement) {
                 e.preventDefault();
             }
         }, { passive: false });
         
+        // wheel 이벤트로 인한 스크롤 방지
+        document.addEventListener('wheel', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+        
+        // visualViewport API 사용 (모바일 브라우저 주소창 대응)
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('scroll', (e) => {
+                e.preventDefault();
+                window.scrollTo(0, 0);
+                lockScreen();
+            });
+            
+            window.visualViewport.addEventListener('resize', () => {
+                lockScreen();
+                handleResize();
+            });
+        }
+        
+        // 초기 실행
+        lockScreen();
         resizeCanvas();
 
         function startGame() {
